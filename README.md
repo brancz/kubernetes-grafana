@@ -60,7 +60,7 @@ At the end the script opens your browser with the new Grafana deployment, config
 
 There are a number of things missing for the Grafana stack and tooling to be fully migrated.
 
-**If you are interested in working on any of these please a respective issue, to avoid duplicating efforts.**
+**If you are interested in working on any of these, please open a respective issue to avoid duplicating efforts.**
 
 1. Migrate [all existing dashboards](https://github.com/coreos/prometheus-operator/tree/master/contrib/kube-prometheus/assets/grafana) to jsonnet. The missing dashboards are:
     * Deployment
