@@ -33,6 +33,13 @@ local prometheus = grafana.prometheus;
                 },
             withSpanSize(size):: self {
                     span: size,
-                }
+                },
+            withSparkline():: self {
+                    sparkline: {
+                        show: true,
+                        lineColor: 'rgb(31, 120, 193)',
+                        fillColor: 'rgba(31, 118, 189, 0.18)',
+                    }
+                },
         }
 }

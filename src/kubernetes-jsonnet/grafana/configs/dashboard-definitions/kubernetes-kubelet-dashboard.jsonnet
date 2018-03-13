@@ -3,23 +3,16 @@ local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
 local prometheus = grafana.prometheus;
 local row = grafana.row;
-local singlestat = grafana.singlestat;
 local template = grafana.template;
+local promgrafonnet = import "promgrafonnet/promgrafonnet.libsonnet";
+local numbersinglestat = promgrafonnet.numbersinglestat;
 
-local podsCount = singlestat.new(
+local podsCount = numbersinglestat.new(
         "Count",
-        datasource="prometheus",
-        span=2,
-        valueName="current",
+        "sum(kubelet_running_pod_count{instance=~\"$instance\"})",
     )
-    .addTarget(prometheus.target("sum(kubelet_running_pod_count{instance=~\"$instance\"})"))
-    + {
-        sparkline: {
-            show: true,
-            lineColor: 'rgb(31, 120, 193)',
-            fillColor: 'rgba(31, 118, 189, 0.18)',
-        },
-    };
+    .withSpanSize(2)
+    .withSparkline();
 
 local podsGraph = graphPanel.new(
         "Count",
@@ -37,20 +30,13 @@ local podRow = row.new(title="Pods", showTitle=true, titleSize="h4")
     .addPanel(podsCount)
     .addPanel(podsGraph);
 
-local containersCount = singlestat.new(
+local containersCount = numbersinglestat.new(
         "Count",
-        datasource="prometheus",
-        span=2,
-        valueName="current",
+        "sum(kubelet_running_container_count{instance=~\"$instance\"})",
     )
-    .addTarget(prometheus.target("sum(kubelet_running_container_count{instance=~\"$instance\"})"))
-    + {
-        sparkline: {
-            show: true,
-            lineColor: 'rgb(31, 120, 193)',
-            fillColor: 'rgba(31, 118, 189, 0.18)',
-        },
-    };
+    .withSpanSize(2)
+    .withSparkline();
+
 
 local containersGraph = graphPanel.new(
         "Count",
