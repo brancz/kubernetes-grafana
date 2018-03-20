@@ -1,9 +1,9 @@
 local k = import "ksonnet.beta.3/k.libsonnet";
-local deployment = k.apps.v1beta2.deployment;
+local deployment = k.apps.v1beta1.deployment;
 
-local deployment = k.apps.v1beta2.deployment;
-local container = k.apps.v1beta2.deployment.mixin.spec.template.spec.containersType;
-local volume = k.apps.v1beta2.deployment.mixin.spec.template.spec.volumesType;
+local deployment = k.apps.v1beta1.deployment;
+local container = k.apps.v1beta1.deployment.mixin.spec.template.spec.containersType;
+local volume = k.apps.v1beta1.deployment.mixin.spec.template.spec.volumesType;
 local containerPort = container.portsType;
 local containerVolumeMount = container.volumeMountsType;
 local podSelector = deployment.mixin.spec.template.spec.selectorType;
