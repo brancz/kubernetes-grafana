@@ -3,3 +3,7 @@ before_script:
   - go get -v -u github.com/google/go-jsonnet
   - cd $GOPATH/src/github.com/google/go-jsonnet/jsonnet
   - go build -o $GOPATH/bin/jsonnet
+
+script:
+  - bash fmt.sh
+  - bash build.sh
