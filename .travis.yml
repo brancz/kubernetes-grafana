@@ -1,0 +1,8 @@
+language: go
+go:
+  - "1.10"
+
+before_script:
+  - go get github.com/google/go-jsonnet
+  - cd $GOPATH/src/github.com/google/go-jsonnet/jsonnet
+  - go build -o $GOPATH/bin/jsonnet
