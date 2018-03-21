@@ -1,8 +1,7 @@
 before_script:
   - go get -v -u github.com/fatih/color
   - go get -v -u github.com/google/go-jsonnet
-  - cd $GOPATH/src/github.com/google/go-jsonnet/jsonnet
-  - go build -o $GOPATH/bin/jsonnet
+  - go install -v github.com/google/go-jsonnet/jsonnet
 
 script:
   - bash fmt.sh
