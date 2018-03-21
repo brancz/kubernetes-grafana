@@ -9,7 +9,8 @@ local template = grafana.template;
 local numbersinglestat = promgrafonnet.numbersinglestat;
 
 local memoryRow = row.new()
-    .addPanel(graphPanel.new(
+    .addPanel(
+        graphPanel.new(
             "Memory Usage",
             datasource="prometheus",
             min=0,
@@ -34,7 +35,8 @@ local memoryRow = row.new()
     );
 
 local cpuRow = row.new()
-    .addPanel(graphPanel.new(
+    .addPanel(
+        graphPanel.new(
             "CPU Usage",
             datasource="prometheus",
             min=0,
@@ -50,7 +52,8 @@ local cpuRow = row.new()
     );
 
 local networkRow = row.new()
-    .addPanel(graphPanel.new(
+    .addPanel(
+        graphPanel.new(
             "Network I/O",
             datasource="prometheus",
             format="bytes",
