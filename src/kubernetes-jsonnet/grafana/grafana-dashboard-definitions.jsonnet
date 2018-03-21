@@ -11,4 +11,4 @@ local dashboards = {
     "pods-dashboard.json": import "configs/dashboard-definitions/pods-dashboard.jsonnet",
 };
 
-configMap.new("grafana-dashboard-definitions", {[name]: std.manifestJsonEx(dashboards[name], "    ") for name in std.objectFields(dashboards)})
+configMap.new("grafana-dashboard-definitions", { [name]: std.manifestJsonEx(dashboards[name], "    ") for name in std.objectFields(dashboards) })

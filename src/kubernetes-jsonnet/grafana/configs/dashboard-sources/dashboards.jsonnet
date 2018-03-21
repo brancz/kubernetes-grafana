@@ -5,7 +5,7 @@
         folder: "",
         type: "file",
         options: {
-            path: "/grafana-dashboard-definitions/0"
-        }
-    }
+            path: "/grafana-dashboard-definitions/0",
+        },
+    },
 ]

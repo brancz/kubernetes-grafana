@@ -17,7 +17,8 @@ local idleCPU = graphPanel.new(
         min=0,
     )
     .addTarget(prometheus.target(
-        "100 - (avg by (cpu) (irate(node_cpu{mode=\"idle\", instance=\"$server\"}[5m])) * 100)", legendFormat="{{cpu}}",
+        "100 - (avg by (cpu) (irate(node_cpu{mode=\"idle\", instance=\"$server\"}[5m])) * 100)",
+        legendFormat="{{cpu}}",
         intervalFactor=10,
     ));
 
@@ -72,7 +73,7 @@ local diskIO = graphPanel.new(
             {
               alias: "io time",
               yaxis: 2,
-            }
+            },
         ],
         yaxes: [
             self.yaxe(format="bytes"),

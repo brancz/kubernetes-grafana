@@ -10,7 +10,7 @@ local podSelector = deployment.mixin.spec.template.spec.selectorType;
 
 local targetPort = 3000;
 local version = "5.0.0";
-local podLabels = {"app": "grafana"};
+local podLabels = { app: "grafana" };
 
 local storageVolumeName = "grafana-storage";
 local storageVolume = volume.fromEmptyDir(storageVolumeName);
@@ -35,8 +35,8 @@ local c =
   container.new("grafana", "quay.io/coreos/monitoring-grafana:" + version) +
   container.withVolumeMounts([storageVolumeMount, datasourcesVolumeMount, dashboardsVolumeMount, dashboardDefinitionsVolumeMount]) +
   container.withPorts(containerPort.newNamed("http", targetPort)) +
-  container.mixin.resources.withRequests({cpu: "100m", memory: "100Mi"}) +
-  container.mixin.resources.withLimits({cpu: "200m", memory: "200Mi"});
+  container.mixin.resources.withRequests({ cpu: "100m", memory: "100Mi" }) +
+  container.mixin.resources.withLimits({ cpu: "200m", memory: "200Mi" });
 
 local d = deployment.new("grafana", 1, c, podLabels) +
   deployment.mixin.spec.selector.withMatchLabels(podLabels) +

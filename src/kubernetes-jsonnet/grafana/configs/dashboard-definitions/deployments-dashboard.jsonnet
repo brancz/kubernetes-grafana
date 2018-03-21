@@ -110,4 +110,3 @@ dashboard.new("Deployments", time_from="now-1h")
     .addRow(overviewRow)
     .addRow(statsRow)
     .addRow(replicasRow)
-
