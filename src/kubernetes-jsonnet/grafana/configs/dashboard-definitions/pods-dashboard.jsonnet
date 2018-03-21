@@ -24,11 +24,11 @@ local memoryRow = row.new()
             legendFormat="Current: {{ container_name }}",
         ))
         .addTarget(prometheus.target(
-            "sum by(container) (kube_pod_container_resource_requests_memory_bytes{exported_namespace=\"$namespace\", exported_pod=\"$pod\", container=~\"$container\", container!=\"POD\"})",
+            "sum by(container) (kube_pod_container_resource_requests_memory_bytes{namespace=\"$namespace\", pod=\"$pod\", container=~\"$container\", container!=\"POD\"})",
             legendFormat="Requested: {{ container }}",
         ))
         .addTarget(prometheus.target(
-            "sum by(container) (kube_pod_container_resource_limits_memory_bytes{exported_namespace=\"$namespace\", exported_pod=\"$pod\", container=~\"$container\", container!=\"POD\"})",
+            "sum by(container) (kube_pod_container_resource_limits_memory_bytes{namespace=\"$namespace\", pod=\"$pod\", container=~\"$container\", container!=\"POD\"})",
             legendFormat="Limit: {{ container }}",
         ))
     );
@@ -71,7 +71,7 @@ dashboard.new("Pods", time_from="now-1h")
         template.new(
             "namespace",
             "prometheus",
-            "label_values(kube_pod_info, exported_namespace)",
+            "label_values(kube_pod_info, namespace)",
             label="Namespace",
             refresh="time",
         )
@@ -80,7 +80,7 @@ dashboard.new("Pods", time_from="now-1h")
         template.new(
             "pod",
             "prometheus",
-            "label_values(kube_pod_info{exported_namespace=~\"$namespace\"}, exported_pod)",
+            "label_values(kube_pod_info{namespace=~\"$namespace\"}, pod)",
             label="Pod",
             refresh="time",
         )
@@ -89,7 +89,7 @@ dashboard.new("Pods", time_from="now-1h")
         template.new(
             "container",
             "prometheus",
-            "label_values(kube_pod_container_info{exported_namespace=\"$namespace\", exported_pod=\"$pod\"}, container)",
+            "label_values(kube_pod_container_info{namespace=\"$namespace\", pod=\"$pod\"}, container)",
             label="Container",
             refresh="time",
             includeAll=true,
