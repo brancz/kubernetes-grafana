@@ -9,7 +9,7 @@ local containerVolumeMount = container.volumeMountsType;
 local podSelector = deployment.mixin.spec.template.spec.selectorType;
 
 local targetPort = 3000;
-local version = "5.0.0";
+local version = "5.0.3";
 local podLabels = { app: "grafana" };
 
 local storageVolumeName = "grafana-storage";
