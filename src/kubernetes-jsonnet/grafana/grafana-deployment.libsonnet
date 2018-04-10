@@ -38,12 +38,14 @@ local c =
   container.mixin.resources.withRequests({ cpu: "100m", memory: "100Mi" }) +
   container.mixin.resources.withLimits({ cpu: "200m", memory: "200Mi" });
 
-local d = deployment.new("grafana", 1, c, podLabels) +
-  deployment.mixin.spec.selector.withMatchLabels(podLabels) +
-  deployment.mixin.metadata.withLabels(podLabels) +
-  deployment.mixin.spec.template.spec.withVolumes([storageVolume, datasourcesVolume, dashboardsVolume, dashboardDefinitionsVolume]) +
-  deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
-  deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
-  deployment.mixin.spec.template.spec.withServiceAccountName("grafana");
-
-d
+{
+    new(namespace)::
+        deployment.new("grafana", 1, c, podLabels) +
+          deployment.mixin.metadata.withNamespace(namespace) +
+          deployment.mixin.metadata.withLabels(podLabels) +
+          deployment.mixin.spec.selector.withMatchLabels(podLabels) +
+          deployment.mixin.spec.template.spec.withVolumes([storageVolume, datasourcesVolume, dashboardsVolume, dashboardDefinitionsVolume]) +
+          deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
+          deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
+          deployment.mixin.spec.template.spec.withServiceAccountName("grafana")
+}
