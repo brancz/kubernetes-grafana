@@ -36,22 +36,22 @@ local overviewRow = row.new()
 
 local desiredReplicasStat = numbersinglestat.new(
         "Desired Replicas",
-        "max(kube_deployment_spec_replicas{exported_namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
+        "max(kube_deployment_spec_replicas{namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
     );
 
 local availableReplicasStat = numbersinglestat.new(
         "Available Replicas",
-        "min(kube_deployment_status_replicas_available{exported_namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
+        "min(kube_deployment_status_replicas_available{namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
     );
 
 local observedGenerationStat = numbersinglestat.new(
         "Observed Generation",
-        "max(kube_deployment_status_observed_generation{exported_namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
+        "max(kube_deployment_status_observed_generation{namespace=\"$deployment_namespace\",deployment=\"$deployment_name\"}) without (instance, pod)",
     );
 
 local metadataGenerationStat = numbersinglestat.new(
         "Metadata Generation",
-        "max(kube_deployment_metadata_generation{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "max(kube_deployment_metadata_generation{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
     );
 
 local statsRow = row.new(height="100px")
@@ -65,23 +65,23 @@ local replicasGraph = graphPanel.new(
         datasource="prometheus",
     )
     .addTarget(prometheus.target(
-        "max(kube_deployment_status_replicas{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "max(kube_deployment_status_replicas{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
         legendFormat="current replicas",
     ))
     .addTarget(prometheus.target(
-        "min(kube_deployment_status_replicas_available{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "min(kube_deployment_status_replicas_available{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
         legendFormat="available",
     ))
     .addTarget(prometheus.target(
-        "max(kube_deployment_status_replicas_unavailable{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "max(kube_deployment_status_replicas_unavailable{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
         legendFormat="unavailable",
     ))
     .addTarget(prometheus.target(
-        "min(kube_deployment_status_replicas_updated{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "min(kube_deployment_status_replicas_updated{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
         legendFormat="updated",
     ))
     .addTarget(prometheus.target(
-        "max(kube_deployment_spec_replicas{deployment=\"$deployment_name\",exported_namespace=\"$deployment_namespace\"}) without (instance, pod)",
+        "max(kube_deployment_spec_replicas{deployment=\"$deployment_name\",namespace=\"$deployment_namespace\"}) without (instance, pod)",
         legendFormat="desired",
     ));
 
@@ -93,7 +93,7 @@ dashboard.new("Deployments", time_from="now-1h")
         template.new(
             "deployment_namespace",
             "prometheus",
-            "label_values(kube_deployment_metadata_generation, exported_namespace)",
+            "label_values(kube_deployment_metadata_generation, namespace)",
             label="Namespace",
             refresh="time",
         )
@@ -102,7 +102,7 @@ dashboard.new("Deployments", time_from="now-1h")
         template.new(
             "deployment_name",
             "prometheus",
-            "label_values(kube_deployment_metadata_generation{exported_namespace=\"$deployment_namespace\"}, deployment)",
+            "label_values(kube_deployment_metadata_generation{namespace=\"$deployment_namespace\"}, deployment)",
             label="Name",
             refresh="time",
         )
