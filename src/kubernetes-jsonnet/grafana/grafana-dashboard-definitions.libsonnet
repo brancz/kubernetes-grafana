@@ -3,6 +3,7 @@ local configMap = k.core.v1.configMap;
 
 local dashboards = {
     "deployments-dashboard.json":                     import "configs/dashboard-definitions/deployments-dashboard.libsonnet",
+    "statefulset-dashboard.json":                     import "configs/dashboard-definitions/statefulset-dashboard.libsonnet",
     "kubernetes-capacity-planning-dashboard.json":    import "configs/dashboard-definitions/kubernetes-capacity-planning-dashboard.libsonnet",
     "kubernetes-cluster-health-dashboard.json":       import "configs/dashboard-definitions/kubernetes-cluster-health-dashboard.libsonnet",
     "kubernetes-cluster-status-dashboard.json":       import "configs/dashboard-definitions/kubernetes-cluster-status-dashboard.libsonnet",
