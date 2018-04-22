@@ -13,6 +13,7 @@ local cpuStat = numbersinglestat.new(
         "sum(rate(container_cpu_usage_seconds_total{namespace=\"$deployment_namespace\",pod_name=~\"$deployment_name.*\"}[3m]))",
     )
     .withSpanSize(4)
+    .withPostfix("cores")
     .withSparkline();
 
 local memoryStat = numbersinglestat.new(
@@ -20,6 +21,7 @@ local memoryStat = numbersinglestat.new(
         "sum(container_memory_usage_bytes{namespace=\"$deployment_namespace\",pod_name=~\"$deployment_name.*\"}) / 1024^3",
     )
     .withSpanSize(4)
+    .withPostfix("GB")
     .withSparkline();
 
 local networkStat = numbersinglestat.new(
@@ -27,6 +29,7 @@ local networkStat = numbersinglestat.new(
         "sum(rate(container_network_transmit_bytes_total{namespace=\"$deployment_namespace\",pod_name=~\"$deployment_name.*\"}[3m])) + sum(rate(container_network_receive_bytes_total{namespace=\"$deployment_namespace\",pod_name=~\"$deployment_name.*\"}[3m]))",
     )
     .withSpanSize(4)
+    .withPostfix("Bps")
     .withSparkline();
 
 local overviewRow = row.new()

@@ -34,6 +34,9 @@ local prometheus = grafana.prometheus;
             withSpanSize(size):: self {
                     span: size,
                 },
+            withPostfix(postfix):: self {
+                    postfix: postfix,
+                },
             withSparkline():: self {
                     sparkline: {
                         show: true,
