@@ -8,9 +8,11 @@ local dashboards = {
     "kubernetes-cluster-status-dashboard.json":       import "configs/dashboard-definitions/kubernetes-cluster-status-dashboard.libsonnet",
     "kubernetes-control-plane-status-dashboard.json": import "configs/dashboard-definitions/kubernetes-control-plane-status-dashboard.libsonnet",
     "kubernetes-kubelet-dashboard.json":              import "configs/dashboard-definitions/kubernetes-kubelet-dashboard.libsonnet",
+    "kubernetes-resource-requests-dashboard.json":    import "configs/dashboard-definitions/kubernetes-resource-requests-dashboard.libsonnet",
     "nodes.json":                                     import "configs/dashboard-definitions/nodes.libsonnet",
     "pods-dashboard.json":                            import "configs/dashboard-definitions/pods-dashboard.libsonnet",
 };
+
 
 {
     new(namespace)::
