@@ -39,17 +39,17 @@ jb install github.com/brancz/kubernetes-grafana/grafana
 
 An example of how to use it could be:
 
-```
+[embedmd]:# (example.jsonnet)
+```jsonnet
 local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-local grafana = (import "grafana/grafana.libsonnet") + {
+local grafana = ((import "grafana/grafana.libsonnet") + {
     _config+:: {
         namespace: "monitoring-grafana",
-        dashboards: {}, // add your dashboards here
     }
-};
+}).grafana;
 
 k.core.v1.list.new([
     grafana.dashboardDefinitions,
@@ -71,21 +71,28 @@ Simply run:
 $ jsonnet -J vendor example.jsonnet
 ```
 
-Using the [kubernetes-mixin](https://github.com/kubernetes-monitoring/kubernetes-mixin)s only a small change is needed:
+Using the [kubernetes-mixin](https://github.com/kubernetes-monitoring/kubernetes-mixin)s, simply install:
 
 ```
+$ jb install github.com/kubernetes-monitoring/kubernetes-mixin
+```
+
+And apply the mixin:
+
+[embedmd]:# (example-with-mixin.jsonnet)
+```jsonnet
 local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-local kubernetes_mixin = import "kubernetes-mixin/mixin.libsonnet";
-
-local grafana = (import "grafana/grafana.libsonnet") + {
-    _config+:: {
-        namespace: "monitoring-grafana",
-        dashboards: kubernetes_mixin.grafana_dashboards,
-    }
-};
+local grafana = (
+    (import "grafana/grafana.libsonnet") +
+    (import "kubernetes-mixin/mixin.libsonnet") +
+    {
+        _config+:: {
+            namespace: "monitoring-grafana",
+        }
+    }).grafana;
 
 k.core.v1.list.new([
     grafana.dashboardDefinitions,
@@ -102,7 +109,7 @@ k.core.v1.list.new([
 To generate, again simply run:
 
 ```
-$ jsonnet -J vendor example.jsonnet
+$ jsonnet -J vendor example-with-mixin.jsonnet
 ```
 
 This yields a fully configured Grafana stack with useful Kubernetes dashboards.
