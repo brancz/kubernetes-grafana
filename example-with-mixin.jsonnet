@@ -2,10 +2,12 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
+local kubernetes_mixin = import "kubernetes-mixin/mixin.libsonnet";
+
 local grafana = (import "grafana/grafana.libsonnet") + {
     _config+:: {
         namespace: "monitoring-grafana",
-        dashboards: {}, // add your dashboards here
+        dashboards: kubernetes_mixin.grafana_dashboards,
     }
 };
 
