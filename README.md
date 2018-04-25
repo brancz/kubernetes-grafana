@@ -71,6 +71,42 @@ Simply run:
 $ jsonnet -J vendor example.jsonnet
 ```
 
+Using the [kubernetes-mixin](https://github.com/kubernetes-monitoring/kubernetes-mixin)s only a small change is needed:
+
+```
+local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
+local service = k.core.v1.service;
+local servicePort = k.core.v1.service.mixin.spec.portsType;
+
+local kubernetes_mixin = import "kubernetes-mixin/mixin.libsonnet";
+
+local grafana = (import "grafana/grafana.libsonnet") + {
+    _config+:: {
+        namespace: "monitoring-grafana",
+        dashboards: kubernetes_mixin.grafana_dashboards,
+    }
+};
+
+k.core.v1.list.new([
+    grafana.dashboardDefinitions,
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+        service.mixin.spec.withPorts(servicePort.newNamed("http", 3000, "http") + servicePort.withNodePort(30910)) +
+        service.mixin.spec.withType("NodePort"),
+])
+```
+
+To generate, again simply run:
+
+```
+$ jsonnet -J vendor example.jsonnet
+```
+
+This yields a fully configured Grafana stack with useful Kubernetes dashboards.
+
 # Roadmap
 
 There are a number of things missing for the Grafana stack and tooling to be fully migrated.
