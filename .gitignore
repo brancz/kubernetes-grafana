@@ -1,1 +1,3 @@
 artifacts/
+vendor/
+jsonnetfile.lock.json
