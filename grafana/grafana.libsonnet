@@ -5,11 +5,11 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
         namespace: "default",
 
         versions+:: {
-            grafana: "5.0.3",
+            grafana: "5.1.0",
         },
 
         imageRepos+:: {
-            grafana: "quay.io/coreos/monitoring-grafana",
+            grafana: "grafana/grafana",
         },
 
         grafana+:: {
@@ -58,17 +58,17 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
 
             local storageVolumeName = "grafana-storage";
             local storageVolume = volume.fromEmptyDir(storageVolumeName);
-            local storageVolumeMount = containerVolumeMount.new(storageVolumeName, "/data");
+            local storageVolumeMount = containerVolumeMount.new(storageVolumeName, "/var/lib/grafana");
 
             local datasourcesVolumeName = "grafana-datasources";
             local datasourcesConfigMapName = "grafana-datasources";
             local datasourcesVolume = volume.withName(datasourcesVolumeName) + volume.mixin.configMap.withName(datasourcesConfigMapName);
-            local datasourcesVolumeMount = containerVolumeMount.new(datasourcesVolumeName, "/grafana/conf/provisioning/datasources");
+            local datasourcesVolumeMount = containerVolumeMount.new(datasourcesVolumeName, "/etc/grafana/provisioning/datasources");
 
             local dashboardsVolumeName = "grafana-dashboards";
             local dashboardsConfigMapName = "grafana-dashboards";
             local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(dashboardsConfigMapName);
-            local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, "/grafana/conf/provisioning/dashboards");
+            local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, "/etc/grafana/provisioning/dashboards");
 
             local dashboardDefinitionsVolumeName = "grafana-dashboard-definitions";
             local dashboardDefinitionsConfigMapName = "grafana-dashboard-definitions";
