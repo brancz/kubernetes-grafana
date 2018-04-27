@@ -91,7 +91,10 @@ local grafana = (
     {
         _config+:: {
             namespace: "monitoring-grafana",
-        }
+            grafana+:: {
+                dashboards: $.grafanaDashboards,
+            },
+        },
     }).grafana;
 
 k.core.v1.list.new([
