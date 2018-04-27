@@ -3,12 +3,24 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
 {
     _config+:: {
         namespace: "default",
+
+        versions+:: {
+            grafana: "5.0.3",
+        },
+
+        imageRepos+:: {
+            grafana: "quay.io/coreos/monitoring-grafana",
+        },
+
+        grafana+:: {
+            dashboards: {},
+        },
     },
     grafanaDashboards: {},
     grafana+: {
         dashboardDefinitions:
             local configMap = k.core.v1.configMap;
-            configMap.new("grafana-dashboard-definitions", {[name]: std.manifestJsonEx($.grafanaDashboards[name], "    ") for name in std.objectFields($.grafanaDashboards)}) +
+            configMap.new("grafana-dashboard-definitions", {[name]: std.manifestJsonEx($._config.grafana.dashboards[name], "    ") for name in std.objectFields($._config.grafana.dashboards)}) +
               configMap.mixin.metadata.withNamespace($._config.namespace),
         dashboardSources:
             local configMap = k.core.v1.configMap;
@@ -42,7 +54,6 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
             local podSelector = deployment.mixin.spec.template.spec.selectorType;
 
             local targetPort = 3000;
-            local version = "5.0.3";
             local podLabels = { app: "grafana" };
 
             local storageVolumeName = "grafana-storage";
@@ -65,7 +76,7 @@ local k = import "ksonnet/ksonnet.beta.3/k.libsonnet";
             local dashboardDefinitionsVolumeMount = containerVolumeMount.new(dashboardDefinitionsVolumeName, "/grafana-dashboard-definitions/0");
 
             local c =
-              container.new("grafana", "quay.io/coreos/monitoring-grafana:" + version) +
+              container.new("grafana", $._config.imageRepos.grafana + ":" + $._config.versions.grafana) +
               container.withVolumeMounts([storageVolumeMount, datasourcesVolumeMount, dashboardsVolumeMount, dashboardDefinitionsVolumeMount]) +
               container.withPorts(containerPort.newNamed("http", targetPort)) +
               container.mixin.resources.withRequests({ cpu: "100m", memory: "100Mi" }) +
