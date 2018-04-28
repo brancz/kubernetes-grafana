@@ -39,7 +39,7 @@ jb install github.com/brancz/kubernetes-grafana/grafana
 
 An example of how to use it could be:
 
-[embedmd]:# (example.jsonnet)
+[embedmd]:# (examples/basic.jsonnet)
 ```jsonnet
 local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 local service = k.core.v1.service;
@@ -71,6 +71,10 @@ Simply run:
 $ jsonnet -J vendor example.jsonnet
 ```
 
+### Customizing
+
+#### Dashboards mixins
+
 Using the [kubernetes-mixin](https://github.com/kubernetes-monitoring/kubernetes-mixin)s, simply install:
 
 ```
@@ -79,7 +83,7 @@ $ jb install github.com/kubernetes-monitoring/kubernetes-mixin
 
 And apply the mixin:
 
-[embedmd]:# (example-with-mixin.jsonnet)
+[embedmd]:# (examples/basic-with-mixin.jsonnet)
 ```jsonnet
 local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 local service = k.core.v1.service;
@@ -117,6 +121,44 @@ $ jsonnet -J vendor example-with-mixin.jsonnet
 ```
 
 This yields a fully configured Grafana stack with useful Kubernetes dashboards.
+
+#### Config customization
+
+Grafana can be run with many different configurations. Different organizations have different preferences, therefore the Grafana configuration can be arbitrary modified. The configuration happens via the the `$._config.grafana.config` variable. The `$._config.grafana.config` field is compiled using jsonnet's `std.manifestIni` function.
+
+For example to enable Prometheus metrics in the Grafana configuration use:
+
+[embedmd]:# (examples/custom-ini.jsonnet)
+```jsonnet
+local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local service = k.core.v1.service;
+local servicePort = k.core.v1.service.mixin.spec.portsType;
+
+local grafana = ((import 'grafana/grafana.libsonnet') + {
+                   _config+:: {
+                     namespace: 'monitoring-grafana',
+                     grafana+:: {
+                       config: {
+                         sections: {
+                           metrics: { enabled: true },
+                         },
+                       },
+                     },
+                   },
+                 }).grafana;
+
+k.core.v1.list.new([
+  grafana.config,
+  grafana.dashboardDefinitions,
+  grafana.dashboardSources,
+  grafana.dashboardDatasources,
+  grafana.deployment,
+  grafana.serviceAccount,
+  grafana.service +
+  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+  service.mixin.spec.withType('NodePort'),
+])
+```
 
 # Roadmap
 

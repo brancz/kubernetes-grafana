@@ -14,10 +14,15 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      config: null,
     },
   },
   grafanaDashboards: {},
   grafana+: {
+    [if $._config.grafana.config != null then 'config']:
+      local configMap = k.core.v1.configMap;
+      configMap.new('grafana-config', { 'grafana.ini': std.manifestIni($._config.grafana.config) }) +
+      configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
       configMap.new('grafana-dashboard-definitions', { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') for name in std.objectFields($._config.grafana.dashboards) }) +
@@ -56,6 +61,11 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local targetPort = 3000;
       local podLabels = { app: 'grafana' };
 
+      local configVolumeName = 'grafana-config';
+      local configConfigMapName = 'grafana-config';
+      local configVolume = volume.withName(configVolumeName) + volume.mixin.configMap.withName(configConfigMapName);
+      local configVolumeMount = containerVolumeMount.new(configVolumeName, '/etc/grafana');
+
       local storageVolumeName = 'grafana-storage';
       local storageVolume = volume.fromEmptyDir(storageVolumeName);
       local storageVolumeMount = containerVolumeMount.new(storageVolumeName, '/var/lib/grafana');
@@ -75,9 +85,23 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local dashboardDefinitionsVolume = volume.withName(dashboardDefinitionsVolumeName) + volume.mixin.configMap.withName(dashboardDefinitionsConfigMapName);
       local dashboardDefinitionsVolumeMount = containerVolumeMount.new(dashboardDefinitionsVolumeName, '/grafana-dashboard-definitions/0');
 
+      local volumeMounts = [
+        storageVolumeMount,
+        datasourcesVolumeMount,
+        dashboardsVolumeMount,
+        dashboardDefinitionsVolumeMount,
+      ] + if $._config.grafana.config != null then [configVolumeMount] else [];
+
+      local volumes = [
+        storageVolume,
+        datasourcesVolume,
+        dashboardsVolume,
+        dashboardDefinitionsVolume,
+      ] + if $._config.grafana.config != null then [configVolume] else [];
+
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
-        container.withVolumeMounts([storageVolumeMount, datasourcesVolumeMount, dashboardsVolumeMount, dashboardDefinitionsVolumeMount]) +
+        container.withVolumeMounts(volumeMounts) +
         container.withPorts(containerPort.newNamed('http', targetPort)) +
         container.mixin.resources.withRequests({ cpu: '100m', memory: '100Mi' }) +
         container.mixin.resources.withLimits({ cpu: '200m', memory: '200Mi' });
@@ -86,7 +110,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       deployment.mixin.metadata.withNamespace($._config.namespace) +
       deployment.mixin.metadata.withLabels(podLabels) +
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
-      deployment.mixin.spec.template.spec.withVolumes([storageVolume, datasourcesVolume, dashboardsVolume, dashboardDefinitionsVolume]) +
+      deployment.mixin.spec.template.spec.withVolumes(volumes) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
       deployment.mixin.spec.template.spec.withServiceAccountName('grafana'),
