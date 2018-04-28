@@ -18,7 +18,7 @@ build: jb
 	$(MAKE) compile
 
 compile:
-	jsonnet -J grafana/vendor example.jsonnet
+	jsonnet -J grafana/vendor -J . examples/basic.jsonnet
 
 jb:
 	@echo -e "\033[1m>> Ensuring jb (jsonnet-bundler) is installed\033[0m"
