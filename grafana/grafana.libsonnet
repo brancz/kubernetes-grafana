@@ -14,6 +14,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      renderedDashboards: {},
       config: null,
     },
   },
@@ -25,7 +26,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
-      configMap.new('grafana-dashboard-definitions', { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') for name in std.objectFields($._config.grafana.dashboards) }) +
+      configMap.new('grafana-dashboard-definitions', ($._config.grafana.renderedDashboards + { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') for name in std.objectFields($._config.grafana.dashboards) })) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardSources:
       local configMap = k.core.v1.configMap;
