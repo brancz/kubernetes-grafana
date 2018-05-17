@@ -14,6 +14,15 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      datasources: [{
+        name: 'prometheus',
+        type: 'prometheus',
+        access: 'proxy',
+        org_id: 1,
+        url: 'http://prometheus-k8s.monitoring.svc:9090',
+        version: 1,
+        etitable: false,
+      }],
       config: null,
     },
   },
@@ -34,9 +43,8 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.new('grafana-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
-      local prometheusDatasource = import 'configs/datasources/prometheus.libsonnet';
       local configMap = k.core.v1.configMap;
-      configMap.new('grafana-datasources', { 'prometheus.yaml': std.manifestJsonEx(prometheusDatasource, '    ') }) +
+      configMap.new('grafana-datasources', { 'prometheus.yaml': std.manifestJsonEx({ datasources: $._config.grafana.datasources }, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;
