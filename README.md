@@ -51,16 +51,17 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                    },
                  }).grafana;
 
-k.core.v1.list.new([
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  [dashboard for dashboard in grafana.dashboardDefinitions] + [
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 This builds the entire Grafana stack with your own dashboards and a configurable namespace.
@@ -102,16 +103,17 @@ local grafana = (
   }
 ).grafana;
 
-k.core.v1.list.new([
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  [dashboard for dashboard in grafana.dashboardDefinitions] + [
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 To generate, again simply run:
@@ -147,17 +149,18 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                    },
                  }).grafana;
 
-k.core.v1.list.new([
-  grafana.config,
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  [dashboard for dashboard in grafana.dashboardDefinitions] + [
+    grafana.config,
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 # Roadmap
