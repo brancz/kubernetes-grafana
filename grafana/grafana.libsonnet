@@ -21,7 +21,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         org_id: 1,
         url: 'http://prometheus-k8s.monitoring.svc:9090',
         version: 1,
-        etitable: false,
+        editable: false,
       }],
       config: null,
     },
