@@ -12,10 +12,10 @@ Since Grafana v5, Grafana can be provisioned with dashboards from files. This pr
 
 In this repository everything is generated via jsonnet:
 
-* The [Grafana dashboard sources configuration](https://github.com/brancz/kubernetes-grafana/blob/master/src/kubernetes-jsonnet/grafana/configs/dashboard-sources/dashboards.jsonnet).
-* The [Grafana datasources configuration](https://github.com/brancz/kubernetes-grafana/blob/master/src/kubernetes-jsonnet/grafana/configs/datasources/prometheus.jsonnet).
-* The [Grafana dashboard definitions](https://github.com/brancz/kubernetes-grafana/tree/master/src/kubernetes-jsonnet/grafana/configs/dashboard-definitions) with the help of [grafana/grafonnet-lib](https://github.com/grafana/grafonnet-lib).
-* The [Grafana Kubernetes manifests](https://github.com/brancz/kubernetes-grafana/tree/master/src/kubernetes-jsonnet/grafana) with the help of [ksonnet/ksonnet-lib](https://github.com/ksonnet/ksonnet-lib).
+* The [Grafana dashboard sources configuration](https://github.com/brancz/kubernetes-grafana/blob/master/grafana/configs/dashboard-sources/dashboards.libsonnet).
+* The Grafana dashboard datasource configuration, is part of the [configuration](https://github.com/brancz/kubernetes-grafana/blob/master/grafana/grafana.libsonnet#L17-L25), and is then simply [rendered to json](https://github.com/brancz/kubernetes-grafana/blob/master/grafana/grafana.libsonnet#L47).
+* The Grafana dashboard definitions are defined as part of the [configuration](https://github.com/brancz/kubernetes-grafana/blob/master/grafana/grafana.libsonnet#L29). For example, dashboard definitions can be developed with the help of [grafana/grafonnet-lib](https://github.com/grafana/grafonnet-lib).
+* The [Grafana Kubernetes manifests](https://github.com/brancz/kubernetes-grafana/tree/master/grafana) with the help of [ksonnet/ksonnet-lib](https://github.com/ksonnet/ksonnet-lib).
 
 With a single jsonnet command the whole stack is generated and can be applied against a Kubernetes cluster.
 
