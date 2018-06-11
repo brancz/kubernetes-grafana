@@ -16,7 +16,8 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                  }).grafana;
 
 k.core.v1.list.new(
-  [dashboard for dashboard in grafana.dashboardDefinitions] + [
+  grafana.dashboardDefinitions +
+  [
     grafana.config,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
