@@ -51,16 +51,18 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                    },
                  }).grafana;
 
-k.core.v1.list.new([
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  grafana.dashboardDefinitions +
+  [
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 This builds the entire Grafana stack with your own dashboards and a configurable namespace.
@@ -102,16 +104,18 @@ local grafana = (
   }
 ).grafana;
 
-k.core.v1.list.new([
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  grafana.dashboardDefinitions +
+  [
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 To generate, again simply run:
@@ -147,17 +151,19 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                    },
                  }).grafana;
 
-k.core.v1.list.new([
-  grafana.config,
-  grafana.dashboardDefinitions,
-  grafana.dashboardSources,
-  grafana.dashboardDatasources,
-  grafana.deployment,
-  grafana.serviceAccount,
-  grafana.service +
-  service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-  service.mixin.spec.withType('NodePort'),
-])
+k.core.v1.list.new(
+  grafana.dashboardDefinitions +
+  [
+    grafana.config,
+    grafana.dashboardSources,
+    grafana.dashboardDatasources,
+    grafana.deployment,
+    grafana.serviceAccount,
+    grafana.service +
+    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
+    service.mixin.spec.withType('NodePort'),
+  ]
+)
 ```
 
 # Roadmap
@@ -166,6 +172,4 @@ There are a number of things missing for the Grafana stack and tooling to be ful
 
 **If you are interested in working on any of these, please open a respective issue to avoid duplicating efforts.**
 
-1. Bin packing ConfigMaps. The kube-prometheus tooling includes a tool to bin-pack Grafana dashboards into ConfigMaps. This is necessary as Grafana dashboard json definitions can get very large and exceed the ConfigMap size limit of 1Mb. The previous tool was built in bash, which is not only hard to maintain but also breaks the workflow of this repo which uses jsonnet for everything. Eventually this should be extracted into a separate repository, but initially should be developed here to ensure it serves the purpose perfectly.
-
-2. A tool to review Grafana dashboard changes on PRs. While reviewing jsonnet code is a lot easier than the large Grafana json sources, it's hard to imagine what that will actually end up looking like once rendered. Ideally a production-like environment is spun up and produces metrics to be graphed, then a tool could take a screenshot and [Grafana snapshot](http://docs.grafana.org/plugins/developing/snapshot-mode/) of the rendered Grafana dashboards. That way the changes can not only be reviewed in code but also visually. Similar to point 2 this should eventually be it's own project.
+1. A tool to review Grafana dashboard changes on PRs. While reviewing jsonnet code is a lot easier than the large Grafana json sources, it's hard to imagine what that will actually end up looking like once rendered. Ideally a production-like environment is spun up and produces metrics to be graphed, then a tool could take a screenshot and [Grafana snapshot](http://docs.grafana.org/plugins/developing/snapshot-mode/) of the rendered Grafana dashboards. That way the changes can not only be reviewed in code but also visually. Similar to point 2 this should eventually be it's own project.

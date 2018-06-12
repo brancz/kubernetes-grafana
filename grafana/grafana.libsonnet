@@ -34,8 +34,13 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
-      configMap.new('grafana-dashboard-definitions', { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') for name in std.objectFields($._config.grafana.dashboards) }) +
-      configMap.mixin.metadata.withNamespace($._config.namespace),
+      [
+        local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+        configMap.new(dashboardName, { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') }) +
+        configMap.mixin.metadata.withNamespace($._config.namespace)
+
+        for name in std.objectFields($._config.grafana.dashboards)
+      ],
     dashboardSources:
       local configMap = k.core.v1.configMap;
       local dashboardSources = import 'configs/dashboard-sources/dashboards.libsonnet';
@@ -88,24 +93,32 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(dashboardsConfigMapName);
       local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, '/etc/grafana/provisioning/dashboards');
 
-      local dashboardDefinitionsVolumeName = 'grafana-dashboard-definitions';
-      local dashboardDefinitionsConfigMapName = 'grafana-dashboard-definitions';
-      local dashboardDefinitionsVolume = volume.withName(dashboardDefinitionsVolumeName) + volume.mixin.configMap.withName(dashboardDefinitionsConfigMapName);
-      local dashboardDefinitionsVolumeMount = containerVolumeMount.new(dashboardDefinitionsVolumeName, '/grafana-dashboard-definitions/0');
+      local volumeMounts =
+        [
+          storageVolumeMount,
+          datasourcesVolumeMount,
+          dashboardsVolumeMount,
+        ] +
+        [
+          local dashboardName = std.strReplace(name, '.json', '');
+          containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
+          for name in std.objectFields($._config.grafana.dashboards)
+        ] +
+        if $._config.grafana.config != null then [configVolumeMount] else [];
 
-      local volumeMounts = [
-        storageVolumeMount,
-        datasourcesVolumeMount,
-        dashboardsVolumeMount,
-        dashboardDefinitionsVolumeMount,
-      ] + if $._config.grafana.config != null then [configVolumeMount] else [];
-
-      local volumes = [
-        storageVolume,
-        datasourcesVolume,
-        dashboardsVolume,
-        dashboardDefinitionsVolume,
-      ] + if $._config.grafana.config != null then [configVolume] else [];
+      local volumes =
+        [
+          storageVolume,
+          datasourcesVolume,
+          dashboardsVolume,
+        ] +
+        [
+          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          volume.withName(dashboardName) +
+          volume.mixin.configMap.withName(dashboardName)
+          for name in std.objectFields($._config.grafana.dashboards)
+        ] +
+        if $._config.grafana.config != null then [configVolume] else [];
 
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
