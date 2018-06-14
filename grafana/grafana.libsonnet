@@ -18,7 +18,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         name: 'prometheus',
         type: 'prometheus',
         access: 'proxy',
-        org_id: 1,
+        orgId: 1,
         url: 'http://prometheus-k8s.monitoring.svc:9090',
         version: 1,
         editable: false,
@@ -49,7 +49,10 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
       local configMap = k.core.v1.configMap;
-      configMap.new('grafana-datasources', { 'prometheus.yaml': std.manifestJsonEx({ datasources: $._config.grafana.datasources }, '    ') }) +
+      configMap.new('grafana-datasources', { 'prometheus.yaml': std.manifestJsonEx({
+        apiVersion: 1,
+        datasources: $._config.grafana.datasources,
+      }, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;
