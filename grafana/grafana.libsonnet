@@ -48,12 +48,12 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.new('grafana-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
-      local configMap = k.core.v1.configMap;
-      configMap.new('grafana-datasources', { 'prometheus.yaml': std.manifestJsonEx({
+      local secret = k.core.v1.secret;
+      secret.new('grafana-datasources', { 'prometheus.yaml': std.base64(std.manifestJsonEx({
         apiVersion: 1,
         datasources: $._config.grafana.datasources,
-      }, '    ') }) +
-      configMap.mixin.metadata.withNamespace($._config.namespace),
+      }, '    ')) }) +
+      secret.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
@@ -87,8 +87,8 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local storageVolumeMount = containerVolumeMount.new(storageVolumeName, '/var/lib/grafana');
 
       local datasourcesVolumeName = 'grafana-datasources';
-      local datasourcesConfigMapName = 'grafana-datasources';
-      local datasourcesVolume = volume.withName(datasourcesVolumeName) + volume.mixin.configMap.withName(datasourcesConfigMapName);
+      local datasourcesSecretName = 'grafana-datasources';
+      local datasourcesVolume = volume.withName(datasourcesVolumeName) + volume.mixin.secret.withSecretName(datasourcesSecretName);
       local datasourcesVolumeMount = containerVolumeMount.new(datasourcesVolumeName, '/etc/grafana/provisioning/datasources');
 
       local dashboardsVolumeName = 'grafana-dashboards';
