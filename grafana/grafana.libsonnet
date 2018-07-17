@@ -24,6 +24,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         editable: false,
       }],
       config: null,
+      plugins: [],
     },
   },
   grafanaDashboards: {},
@@ -73,6 +74,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local containerPort = container.portsType;
       local containerVolumeMount = container.volumeMountsType;
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
+      local env = container.envType;
 
       local targetPort = 3000;
       local podLabels = { app: 'grafana' };
@@ -125,6 +127,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
+        (if std.length($._config.grafana.plugins) == 0 then {} else container.withEnv([env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))])) +
         container.withVolumeMounts(volumeMounts) +
         container.withPorts(containerPort.newNamed('http', targetPort)) +
         container.mixin.resources.withRequests({ cpu: '100m', memory: '100Mi' }) +
