@@ -31,7 +31,10 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
   grafana+: {
     [if $._config.grafana.config != null then 'config']:
       local secret = k.core.v1.secret;
-      secret.new('grafana-config', { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) }) +
+      local configData = {
+        [fileName]: std.base64($._config.grafana.config[fileName]) for fileName in std.objectFields($._config.grafana.config)
+      };
+      secret.new('grafana-config', configData ) +
       secret.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
