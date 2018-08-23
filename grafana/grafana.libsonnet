@@ -24,6 +24,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         editable: false,
       }],
       config: null,
+      ldap: null,
       plugins: [],
     },
   },
@@ -31,7 +32,9 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
   grafana+: {
     [if $._config.grafana.config != null then 'config']:
       local secret = k.core.v1.secret;
-      secret.new('grafana-config', { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) }) +
+      local grafanaConfig = { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) } +
+                            if $._config.grafana.ldap != null then { 'ldap.toml': std.base64($._config.grafana.ldap) } else {};
+      secret.new('grafana-config', grafanaConfig) +
       secret.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;

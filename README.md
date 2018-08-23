@@ -128,9 +128,9 @@ This yields a fully configured Grafana stack with useful Kubernetes dashboards.
 
 #### Config customization
 
-Grafana can be run with many different configurations. Different organizations have different preferences, therefore the Grafana configuration can be arbitrary modified. The configuration happens via the the `$._config.grafana.config` variable. The `$._config.grafana.config` field is compiled using jsonnet's `std.manifestIni` function.
+Grafana can be run with many different configurations. Different organizations have different preferences, therefore the Grafana configuration can be arbitrary modified. The configuration happens via the the `$._config.grafana.config` variable. The `$._config.grafana.config` field is compiled using jsonnet's `std.manifestIni` function. Additionally you can specify your organizations' LDAP configuration through `$._config.grafana.ldap` variable.
 
-For example to enable Prometheus metrics in the Grafana configuration use:
+For example to modify Grafana configuration and set up LDAP use:
 
 [embedmd]:# (examples/custom-ini.jsonnet)
 ```jsonnet
@@ -145,8 +145,28 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                        config: {
                          sections: {
                            metrics: { enabled: true },
+                           'auth.ldap': {
+                             enabled: true,
+                             config_file: '/etc/grafana/ldap.toml',
+                             allow_sign_up: true,
+                           },
                          },
                        },
+                       ldap: |||
+                         [[servers]]
+                         host = "127.0.0.1"
+                         port = 389
+                         use_ssl = false
+                         start_tls = false
+                         ssl_skip_verify = false
+
+                         bind_dn = "cn=admin,dc=grafana,dc=org"
+                         bind_password = 'grafana'
+
+                         search_filter = "(cn=%s)"
+
+                         search_base_dns = ["dc=grafana,dc=org"]
+                       |||,
                      },
                    },
                  }).grafana;
