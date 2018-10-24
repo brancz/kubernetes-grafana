@@ -23,14 +23,14 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         version: 1,
         editable: false,
       }],
-      config: null,
+      config: {},
       ldap: null,
       plugins: [],
     },
   },
   grafanaDashboards: {},
   grafana+: {
-    [if $._config.grafana.config != null then 'config']:
+    [if std.length($._config.grafana.config) > 0 then 'config']:
       local secret = k.core.v1.secret;
       local grafanaConfig = { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) } +
                             if $._config.grafana.ldap != null then { 'ldap.toml': std.base64($._config.grafana.ldap) } else {};
