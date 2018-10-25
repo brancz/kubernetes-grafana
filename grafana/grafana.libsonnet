@@ -112,7 +112,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
           for name in std.objectFields($._config.grafana.dashboards)
         ] +
-        if $._config.grafana.config != null then [configVolumeMount] else [];
+        if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [];
 
       local volumes =
         [
@@ -126,7 +126,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
           volume.mixin.configMap.withName(dashboardName)
           for name in std.objectFields($._config.grafana.dashboards)
         ] +
-        if $._config.grafana.config != null then [configVolume] else [];
+        if std.length($._config.grafana.config) > 0 then [configVolume] else [];
 
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
