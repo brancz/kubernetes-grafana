@@ -80,6 +80,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local env = container.envType;
 
       local targetPort = 3000;
+      local portName = 'http';
       local podLabels = { app: 'grafana' };
 
       local configVolumeName = 'grafana-config';
@@ -132,7 +133,9 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
         (if std.length($._config.grafana.plugins) == 0 then {} else container.withEnv([env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))])) +
         container.withVolumeMounts(volumeMounts) +
-        container.withPorts(containerPort.newNamed('http', targetPort)) +
+        container.withPorts(containerPort.newNamed(portName, targetPort)) +
+        container.mixin.readinessProbe.httpGet.withPath('/api/health') +
+        container.mixin.readinessProbe.httpGet.withPort(portName) +
         container.mixin.resources.withRequests({ cpu: '100m', memory: '100Mi' }) +
         container.mixin.resources.withLimits({ cpu: '200m', memory: '200Mi' });
 
