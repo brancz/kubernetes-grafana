@@ -19,7 +19,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         type: 'prometheus',
         access: 'proxy',
         orgId: 1,
-        url: 'http://prometheus-k8s.monitoring.svc:9090',
+        url: 'http://prometheus-k8s.' + $._config.namespace + '.svc:9090',
         version: 1,
         editable: false,
       }],
