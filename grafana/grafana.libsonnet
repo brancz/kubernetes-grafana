@@ -65,6 +65,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       local grafanaServiceNodePort = servicePort.newNamed('http', 3000, 'http');
 
       service.new('grafana', $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
+      service.mixin.metadata.withLabels({ app: 'grafana' }) +
       service.mixin.metadata.withNamespace($._config.namespace),
     serviceAccount:
       local serviceAccount = k.core.v1.serviceAccount;
