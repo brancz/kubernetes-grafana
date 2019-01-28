@@ -26,6 +26,9 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       config: {},
       ldap: null,
       plugins: [],
+      service: {
+        annotations: null
+      },
     },
   },
   grafanaDashboards: {},
@@ -66,7 +69,10 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
 
       service.new('grafana', $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
       service.mixin.metadata.withLabels({ app: 'grafana' }) +
-      service.mixin.metadata.withNamespace($._config.namespace),
+      service.mixin.metadata.withNamespace($._config.namespace) +
+      if $._config.grafana.service.annotations != null 
+        then service.mixin.metadata.withAnnotations($._config.grafana.service.annotations) 
+        else {},
     serviceAccount:
       local serviceAccount = k.core.v1.serviceAccount;
       serviceAccount.new('grafana') +
