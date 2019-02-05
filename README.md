@@ -48,6 +48,9 @@ local servicePort = k.core.v1.service.mixin.spec.portsType;
 local grafana = ((import 'grafana/grafana.libsonnet') + {
                    _config+:: {
                      namespace: 'monitoring-grafana',
+                     versions+: {
+                       grafana: '5.4.3',
+                     },
                    },
                  }).grafana;
 
