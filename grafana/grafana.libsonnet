@@ -5,7 +5,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
     namespace: 'default',
 
     versions+:: {
-      grafana: '5.4.3',
+      grafana: '6.0.1',
     },
 
     imageRepos+:: {
