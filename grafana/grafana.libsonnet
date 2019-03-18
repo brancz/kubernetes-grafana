@@ -5,7 +5,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
     namespace: 'default',
 
     versions+:: {
-      grafana: '5.2.4',
+      grafana: '6.0.1',
     },
 
     imageRepos+:: {
@@ -26,6 +26,11 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       config: {},
       ldap: null,
       plugins: [],
+      container: {
+        replicas: 1,
+        requests: { cpu: '100m', memory: '100Mi' },
+        limits: { cpu: '200m', memory: '200Mi' },
+      },
     },
   },
   grafanaDashboards: {},
@@ -137,10 +142,10 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         container.withPorts(containerPort.newNamed(portName, targetPort)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
         container.mixin.readinessProbe.httpGet.withPort(portName) +
-        container.mixin.resources.withRequests({ cpu: '100m', memory: '100Mi' }) +
-        container.mixin.resources.withLimits({ cpu: '200m', memory: '200Mi' });
+        container.mixin.resources.withRequests($._config.grafana.container.requests) +
+        container.mixin.resources.withLimits($._config.grafana.container.limits);
 
-      deployment.new('grafana', 1, c, podLabels) +
+      deployment.new('grafana', $._config.grafana.container.replicas, c, podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
       deployment.mixin.metadata.withLabels(podLabels) +
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
