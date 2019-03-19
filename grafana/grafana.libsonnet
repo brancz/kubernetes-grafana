@@ -27,7 +27,6 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       ldap: null,
       plugins: [],
       container: {
-        replicas: 1,
         requests: { cpu: '100m', memory: '100Mi' },
         limits: { cpu: '200m', memory: '200Mi' },
       },
@@ -145,7 +144,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits);
 
-      deployment.new('grafana', $._config.grafana.container.replicas, c, podLabels) +
+      deployment.new('grafana', 1, c, podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
       deployment.mixin.metadata.withLabels(podLabels) +
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
