@@ -57,7 +57,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
       local secret = k.core.v1.secret;
-      secret.new('grafana-datasources', { 'prometheus.yaml': std.base64(std.manifestJsonEx({
+      secret.new('grafana-datasources', { 'datasources.yaml': std.base64(std.manifestJsonEx({
         apiVersion: 1,
         datasources: $._config.grafana.datasources,
       }, '    ')) }) +
