@@ -1,4 +1,5 @@
 local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local configMapList = k.core.v1.configMapList;
 
 {
   _config+:: {
@@ -32,7 +33,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       },
     },
   },
-  grafanaDashboards: {},
+  grafanaDashboards:: {},
   grafana+: {
     [if std.length($._config.grafana.config) > 0 then 'config']:
       local secret = k.core.v1.secret;
@@ -42,13 +43,15 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       secret.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
-      [
-        local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
-        configMap.new(dashboardName, { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') }) +
-        configMap.mixin.metadata.withNamespace($._config.namespace)
+      configMapList.new(
+        [
+          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          configMap.new(dashboardName, { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') }) +
+          configMap.mixin.metadata.withNamespace($._config.namespace)
 
-        for name in std.objectFields($._config.grafana.dashboards)
-      ],
+          for name in std.objectFields($._config.grafana.dashboards)
+        ]
+      ),
     dashboardSources:
       local configMap = k.core.v1.configMap;
       local dashboardSources = import 'configs/dashboard-sources/dashboards.libsonnet';
