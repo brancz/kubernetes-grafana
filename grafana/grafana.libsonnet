@@ -14,6 +14,7 @@ local configMapList = k.core.v1.configMapList;
     },
 
     grafana+:: {
+      name: 'grafana',
       dashboards: {},
       datasources: [{
         name: 'prometheus',
@@ -39,16 +40,15 @@ local configMapList = k.core.v1.configMapList;
       local secret = k.core.v1.secret;
       local grafanaConfig = { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) } +
                             if $._config.grafana.ldap != null then { 'ldap.toml': std.base64($._config.grafana.ldap) } else {};
-      secret.new('grafana-config', grafanaConfig) +
+      secret.new($._config.grafana.name + '-config', grafanaConfig) +
       secret.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
       local configMap = k.core.v1.configMap;
       configMapList.new(
         [
-          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          local dashboardName = $._config.grafana.name + '-dashboard-' + std.strReplace(name, '.json', '');
           configMap.new(dashboardName, { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') }) +
           configMap.mixin.metadata.withNamespace($._config.namespace)
-
           for name in std.objectFields($._config.grafana.dashboards)
         ]
       ),
@@ -56,11 +56,11 @@ local configMapList = k.core.v1.configMapList;
       local configMap = k.core.v1.configMap;
       local dashboardSources = import 'configs/dashboard-sources/dashboards.libsonnet';
 
-      configMap.new('grafana-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
+      configMap.new($._config.grafana.name + '-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
       local secret = k.core.v1.secret;
-      secret.new('grafana-datasources', { 'datasources.yaml': std.base64(std.manifestJsonEx({
+      secret.new($._config.grafana.name + '-datasources', { 'datasources.yaml': std.base64(std.manifestJsonEx({
         apiVersion: 1,
         datasources: $._config.grafana.datasources,
       }, '    ')) }) +
@@ -71,12 +71,12 @@ local configMapList = k.core.v1.configMapList;
 
       local grafanaServiceNodePort = servicePort.newNamed('http', 3000, 'http');
 
-      service.new('grafana', $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
+      service.new($._config.grafana.name, $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
       service.mixin.metadata.withLabels({ app: 'grafana' }) +
       service.mixin.metadata.withNamespace($._config.namespace),
     serviceAccount:
       local serviceAccount = k.core.v1.serviceAccount;
-      serviceAccount.new('grafana') +
+      serviceAccount.new($._config.grafana.name) +
       serviceAccount.mixin.metadata.withNamespace($._config.namespace),
     deployment:
       local deployment = k.apps.v1beta2.deployment;
@@ -92,8 +92,7 @@ local configMapList = k.core.v1.configMapList;
       local podLabels = { app: 'grafana' };
 
       local configVolumeName = 'grafana-config';
-      local configSecretName = 'grafana-config';
-      local configVolume = volume.withName(configVolumeName) + volume.mixin.secret.withSecretName(configSecretName);
+      local configVolume = volume.withName(configVolumeName) + volume.mixin.secret.withSecretName(self.config.metadata.name);
       local configVolumeMount = containerVolumeMount.new(configVolumeName, '/etc/grafana');
 
       local storageVolumeName = 'grafana-storage';
@@ -101,13 +100,11 @@ local configMapList = k.core.v1.configMapList;
       local storageVolumeMount = containerVolumeMount.new(storageVolumeName, '/var/lib/grafana');
 
       local datasourcesVolumeName = 'grafana-datasources';
-      local datasourcesSecretName = 'grafana-datasources';
-      local datasourcesVolume = volume.withName(datasourcesVolumeName) + volume.mixin.secret.withSecretName(datasourcesSecretName);
+      local datasourcesVolume = volume.withName(datasourcesVolumeName) + volume.mixin.secret.withSecretName(self.dashboardDatasources.metadata.name);
       local datasourcesVolumeMount = containerVolumeMount.new(datasourcesVolumeName, '/etc/grafana/provisioning/datasources');
 
       local dashboardsVolumeName = 'grafana-dashboards';
-      local dashboardsConfigMapName = 'grafana-dashboards';
-      local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(dashboardsConfigMapName);
+      local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(self.dashboardSources.metadata.name);
       local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, '/etc/grafana/provisioning/dashboards');
 
       local volumeMounts =
@@ -117,9 +114,9 @@ local configMapList = k.core.v1.configMapList;
         ] +
         (if std.length(self.dashboardDefinitions.items) > 0 then [dashboardsVolumeMount] else []) +
         [
-          local dashboardName = std.strReplace(name, '.json', '');
-          containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
-          for name in std.objectFields($._config.grafana.dashboards)
+          local dashboardName = cfgMap.metadata.name;
+          containerVolumeMount.new(dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
+          for cfgMap in self.dashboardDefinitions.items
         ] +
         if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [];
 
@@ -130,10 +127,10 @@ local configMapList = k.core.v1.configMapList;
         ] +
         (if std.length(self.dashboardDefinitions.items) > 0 then [dashboardsVolume] else []) +
         [
-          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          local dashboardName = cfgMap.metadata.name;
           volume.withName(dashboardName) +
           volume.mixin.configMap.withName(dashboardName)
-          for name in std.objectFields($._config.grafana.dashboards)
+          for cfgMap in self.dashboardDefinitions.items
         ] +
         if std.length($._config.grafana.config) > 0 then [configVolume] else [];
 
@@ -147,7 +144,7 @@ local configMapList = k.core.v1.configMapList;
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits);
 
-      deployment.new('grafana', 1, c, podLabels) +
+      deployment.new($._config.grafana.name, 1, c, podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
       deployment.mixin.metadata.withLabels(podLabels) +
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
@@ -155,6 +152,6 @@ local configMapList = k.core.v1.configMapList;
       deployment.mixin.spec.template.spec.withVolumes(volumes) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
-      deployment.mixin.spec.template.spec.withServiceAccountName('grafana'),
+      deployment.mixin.spec.template.spec.withServiceAccountName(self.serviceAccount.metadata.name),
   },
 }
