@@ -114,8 +114,8 @@ local configMapList = k.core.v1.configMapList;
         [
           storageVolumeMount,
           datasourcesVolumeMount,
-          dashboardsVolumeMount,
         ] +
+        (if std.length(self.dashboardDefinitions.items) > 0 then [dashboardsVolumeMount] else []) +
         [
           local dashboardName = std.strReplace(name, '.json', '');
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
@@ -127,8 +127,8 @@ local configMapList = k.core.v1.configMapList;
         [
           storageVolume,
           datasourcesVolume,
-          dashboardsVolume,
         ] +
+        (if std.length(self.dashboardDefinitions.items) > 0 then [dashboardsVolume] else []) +
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
           volume.withName(dashboardName) +
