@@ -72,7 +72,7 @@ local configMapList = k.core.v1.configMapList;
       local grafanaServiceNodePort = servicePort.newNamed('http', 3000, 'http');
 
       service.new($._config.grafana.name, $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
-      service.mixin.metadata.withLabels({ app: 'grafana' }) +
+      service.mixin.metadata.withLabels({ app: $._config.grafana.name }) +
       service.mixin.metadata.withNamespace($._config.namespace),
     serviceAccount:
       local serviceAccount = k.core.v1.serviceAccount;
@@ -89,7 +89,7 @@ local configMapList = k.core.v1.configMapList;
 
       local targetPort = 3000;
       local portName = 'http';
-      local podLabels = { app: 'grafana' };
+      local podLabels = { app: $._config.grafana.name };
 
       local configVolumeName = 'grafana-config';
       local configVolume = volume.withName(configVolumeName) + volume.mixin.secret.withSecretName(self.config.metadata.name);
