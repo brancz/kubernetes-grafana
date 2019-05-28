@@ -5,7 +5,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
     namespace: 'default',
 
     versions+:: {
-      grafana: '6.2.0',
+      grafana: '6.2.1',
     },
 
     imageRepos+:: {
@@ -150,7 +150,8 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
       deployment.mixin.spec.template.spec.withNodeSelector({ 'beta.kubernetes.io/os': 'linux' }) +
       deployment.mixin.spec.template.spec.withVolumes(volumes) +
-      deployment.mixin.spec.template.spec.securityContext.withRunAsUser(0) +
+      deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
+      deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
       deployment.mixin.spec.template.spec.withServiceAccountName('grafana'),
   },
 }
