@@ -16,8 +16,8 @@ local grafana = (
 ).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
     grafana.deployment,

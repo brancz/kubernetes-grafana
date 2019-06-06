@@ -52,8 +52,8 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                  }).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
     grafana.deployment,
@@ -128,8 +128,8 @@ local grafana =
    }).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
     grafana.deployment,
@@ -171,8 +171,8 @@ local grafana = (
 ).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
     grafana.deployment,
@@ -238,8 +238,8 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                  }).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.config,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
@@ -272,8 +272,8 @@ local grafana = ((import 'grafana/grafana.libsonnet') + {
                  }).grafana;
 
 k.core.v1.list.new(
-  grafana.dashboardDefinitions +
   [
+    grafana.dashboardDefinitions,
     grafana.dashboardSources,
     grafana.dashboardDatasources,
     grafana.deployment,
