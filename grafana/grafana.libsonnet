@@ -1,4 +1,4 @@
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
 {
   _config+:: {
@@ -76,9 +76,9 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       serviceAccount.new('grafana') +
       serviceAccount.mixin.metadata.withNamespace($._config.namespace),
     deployment:
-      local deployment = k.apps.v1beta2.deployment;
-      local container = k.apps.v1beta2.deployment.mixin.spec.template.spec.containersType;
-      local volume = k.apps.v1beta2.deployment.mixin.spec.template.spec.volumesType;
+      local deployment = k.apps.v1.deployment;
+      local container = k.apps.v1.deployment.mixin.spec.template.spec.containersType;
+      local volume = k.apps.v1.deployment.mixin.spec.template.spec.volumesType;
       local containerPort = container.portsType;
       local containerVolumeMount = container.volumeMountsType;
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
