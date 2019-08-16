@@ -1,4 +1,4 @@
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
 {
   _config+:: {
@@ -76,9 +76,9 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
       serviceAccount.new('grafana') +
       serviceAccount.mixin.metadata.withNamespace($._config.namespace),
     deployment:
-      local deployment = k.apps.v1beta2.deployment;
-      local container = k.apps.v1beta2.deployment.mixin.spec.template.spec.containersType;
-      local volume = k.apps.v1beta2.deployment.mixin.spec.template.spec.volumesType;
+      local deployment = k.apps.v1.deployment;
+      local container = k.apps.v1.deployment.mixin.spec.template.spec.containersType;
+      local volume = k.apps.v1.deployment.mixin.spec.template.spec.volumesType;
       local containerPort = container.portsType;
       local containerVolumeMount = container.volumeMountsType;
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
@@ -138,7 +138,7 @@ local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
         (if std.length($._config.grafana.plugins) == 0 then {} else container.withEnv([env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))])) +
         container.withVolumeMounts(volumeMounts) +
-        container.withPorts(containerPort.newNamed(portName, targetPort)) +
+        container.withPorts(containerPort.newNamed(targetPort, portName)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
         container.mixin.readinessProbe.httpGet.withPort(portName) +
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
