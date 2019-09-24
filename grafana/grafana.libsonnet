@@ -14,6 +14,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
     prometheus+:: {
       name: 'k8s',
+      serviceName: 'prometheus-' + $._config.prometheus.name,
     },
 
     grafana+:: {
@@ -23,7 +24,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         type: 'prometheus',
         access: 'proxy',
         orgId: 1,
-        url: 'http://prometheus-' + $._config.prometheus.name + '.' + $._config.namespace + '.svc:9090',
+        url: 'http://' + $._config.prometheus.serviceName + '.' + $._config.namespace + '.svc:9090',
         version: 1,
         editable: false,
       }],
