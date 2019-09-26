@@ -19,6 +19,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      containerPort: { port: 3000, name: 'http' },
+      servicePort: { port: 3000, name: 'http' },
       datasources: [{
         name: 'prometheus',
         type: 'prometheus',
@@ -71,7 +73,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-      local grafanaServiceNodePort = servicePort.newNamed('http', 3000, 'http');
+      local grafanaServiceNodePort = servicePort.newNamed($._config.grafana.servicePort.name, $._config.grafana.servicePort.port, $._config.grafana.containerPort.name);
 
       service.new('grafana', $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
       service.mixin.metadata.withLabels({ app: 'grafana' }) +
@@ -89,8 +91,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
       local env = container.envType;
 
-      local targetPort = 3000;
-      local portName = 'http';
+      local targetPort = $._config.grafana.containerPort.port;
+      local portName = $._config.grafana.containerPort.name;
       local podLabels = { app: 'grafana' };
 
       local configVolumeName = 'grafana-config';
@@ -142,6 +144,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
         (if std.length($._config.grafana.plugins) == 0 then {} else container.withEnv([env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))])) +
+        container.withEnvMixin([env.new('GF_SERVER_HTTP_PORT', '' + $._config.grafana.containerPort.port)]) +
         container.withVolumeMounts(volumeMounts) +
         container.withPorts(containerPort.newNamed(targetPort, portName)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
