@@ -41,8 +41,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
   grafana+: {
     [if std.length($._config.grafana.config) > 0 then 'config']:
       local secret = k.core.v1.secret;
-      local grafanaConfig = { 'grafana.ini': std.base64(std.manifestIni($._config.grafana.config)) } +
-                            if $._config.grafana.ldap != null then { 'ldap.toml': std.base64($._config.grafana.ldap) } else {};
+      local grafanaConfig = { 'grafana.ini': std.base64(std.encodeUTF8(std.manifestIni($._config.grafana.config))) } +
+                            if $._config.grafana.ldap != null then { 'ldap.toml': std.base64(std.encodeUTF8($._config.grafana.ldap)) } else {};
       secret.new('grafana-config', grafanaConfig) +
       secret.mixin.metadata.withNamespace($._config.namespace),
     dashboardDefinitions:
@@ -62,10 +62,10 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       configMap.mixin.metadata.withNamespace($._config.namespace),
     dashboardDatasources:
       local secret = k.core.v1.secret;
-      secret.new('grafana-datasources', { 'datasources.yaml': std.base64(std.manifestJsonEx({
+      secret.new('grafana-datasources', { 'datasources.yaml': std.base64(std.encodeUTF8(std.manifestJsonEx({
         apiVersion: 1,
         datasources: $._config.grafana.datasources,
-      }, '    ')) }) +
+      }, '    '))) }) +
       secret.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;

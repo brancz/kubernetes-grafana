@@ -1,9 +1,9 @@
 language: go
 install:
-- mkdir -p tmp && cd tmp && wget https://github.com/google/jsonnet/archive/v0.10.0.tar.gz &&
-    tar xvfz v0.10.0.tar.gz &&
-    cd jsonnet-0.10.0 &&
-    make && mv jsonnet $HOME/gopath/bin && cd .. && rm -rf tmp && cd $TRAVIS_BUILD_DIR
+- mkdir -p tmp && cd tmp && wget https://github.com/google/jsonnet/archive/v0.14.0.tar.gz &&
+    tar xvfz v0.14.0.tar.gz &&
+    cd jsonnet-0.14.0 &&
+    make && mv jsonnet jsonnetfmt $HOME/gopath/bin && cd .. && rm -rf tmp && cd $TRAVIS_BUILD_DIR
 
 jobs:
   include:
