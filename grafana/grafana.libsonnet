@@ -58,7 +58,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local configMap = k.core.v1.configMap;
       [
         local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
-        configMap.new(dashboardName, { [name]: $._config.grafana.rawDashboards[name]}) +
+        configMap.new(dashboardName, { [name]: $._config.grafana.rawDashboards[name] }) +
         configMap.mixin.metadata.withNamespace($._config.namespace)
 
         for name in std.objectFields($._config.grafana.rawDashboards)
