@@ -19,6 +19,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      rawDashboards: {},
       datasources: [{
         name: 'prometheus',
         type: 'prometheus',
