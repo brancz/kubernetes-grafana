@@ -19,6 +19,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
     grafana+:: {
       dashboards: {},
+      rawDashboards: {},
       datasources: [{
         name: 'prometheus',
         type: 'prometheus',
@@ -53,6 +54,15 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         configMap.mixin.metadata.withNamespace($._config.namespace)
 
         for name in std.objectFields($._config.grafana.dashboards)
+      ],
+    rawDashboardDefinitions:
+      local configMap = k.core.v1.configMap;
+      [
+        local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+        configMap.new(dashboardName, { [name]: $._config.grafana.rawDashboards[name] }) +
+        configMap.mixin.metadata.withNamespace($._config.namespace)
+
+        for name in std.objectFields($._config.grafana.rawDashboards)
       ],
     dashboardSources:
       local configMap = k.core.v1.configMap;
@@ -123,6 +133,12 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
           for name in std.objectFields($._config.grafana.dashboards)
         ] +
+        [
+          local dashboardName = std.strReplace(name, '.json', '');
+          containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
+          for name in std.objectFields($._config.grafana.rawDashboards)
+        ] +
+
         if std.length($._config.grafana.config) > 0 then [configVolumeMount] else [];
 
       local volumes =
@@ -136,6 +152,12 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           volume.withName(dashboardName) +
           volume.mixin.configMap.withName(dashboardName)
           for name in std.objectFields($._config.grafana.dashboards)
+        ] +
+        [
+          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          volume.withName(dashboardName) +
+          volume.mixin.configMap.withName(dashboardName)
+          for name in std.objectFields($._config.grafana.rawDashboards)
         ] +
         if std.length($._config.grafana.config) > 0 then [configVolume] else [];
 
