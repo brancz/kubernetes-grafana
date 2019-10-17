@@ -54,16 +54,14 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         configMap.mixin.metadata.withNamespace($._config.namespace)
 
         for name in std.objectFields($._config.grafana.dashboards)
-      ],
-    rawDashboardDefinitions:
-      local configMap = k.core.v1.configMap;
-      [
-        local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
-        configMap.new(dashboardName, { [name]: $._config.grafana.rawDashboards[name] }) +
-        configMap.mixin.metadata.withNamespace($._config.namespace)
+      ] + if std.length($._config.grafana.rawDashboards) > 0 then
+        [
+          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          configMap.new(dashboardName, { [name]: $._config.grafana.rawDashboards[name] }) +
+          configMap.mixin.metadata.withNamespace($._config.namespace)
 
-        for name in std.objectFields($._config.grafana.rawDashboards)
-      ],
+          for name in std.objectFields($._config.grafana.rawDashboards)
+        ] else [],
     dashboardSources:
       local configMap = k.core.v1.configMap;
       local dashboardSources = import 'configs/dashboard-sources/dashboards.libsonnet';
