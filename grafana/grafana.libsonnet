@@ -5,11 +5,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
     namespace: 'default',
 
     versions+:: {
-      grafana: '6.4.3',
+      grafana: '6.6.0',
+      grafanaImageRenderer: '1.0.9',
     },
 
     imageRepos+:: {
       grafana: 'grafana/grafana',
+      grafanaImageRenderer: 'grafana/grafana-image-renderer',
     },
 
     prometheus+:: {
@@ -33,6 +35,10 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       ldap: null,
       plugins: [],
       container: {
+        requests: { cpu: '100m', memory: '100Mi' },
+        limits: { cpu: '200m', memory: '200Mi' },
+      },
+      imageRendererContainer: {
         requests: { cpu: '100m', memory: '100Mi' },
         limits: { cpu: '200m', memory: '200Mi' },
       },
@@ -98,6 +104,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local env = container.envType;
 
       local targetPort = 3000;
+      local imageRendererPort = 8081;
       local portName = 'http';
       local podLabels = { app: 'grafana' };
 
@@ -159,9 +166,15 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         ] +
         if std.length($._config.grafana.config) > 0 then [configVolume] else [];
 
+      local plugins = (if std.length($._config.grafana.plugins) == 0 then {} else env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins)));
+
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
-        (if std.length($._config.grafana.plugins) == 0 then {} else container.withEnv([env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))])) +
+        container.withEnv([
+          env.new('GF_RENDERING_SERVER_URL', 'http://renderer:' + imageRendererPort + '/render'),
+          env.new('GF_RENDERING_CALLBACK_URL', 'http://grafana:' + targetPort),
+          plugins,
+        ]) +
         container.withVolumeMounts(volumeMounts) +
         container.withPorts(containerPort.newNamed(targetPort, portName)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
@@ -169,7 +182,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits);
 
-      deployment.new('grafana', 1, c, podLabels) +
+      local i =
+        container.new('grafana-image-renderer', $._config.imageRepos.grafanaImageRenderer + ':' + $._config.versions.grafanaImageRenderer) +
+        container.withPorts(containerPort.newNamed(imageRendererPort, portName)) +
+        container.mixin.resources.withRequests($._config.grafana.imageRendererContainer.requests) +
+        container.mixin.resources.withLimits($._config.grafana.imageRendererContainer.limits);
+
+      deployment.new('grafana', 1, [c, i], podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
       deployment.mixin.metadata.withLabels(podLabels) +
       deployment.mixin.spec.selector.withMatchLabels(podLabels) +
