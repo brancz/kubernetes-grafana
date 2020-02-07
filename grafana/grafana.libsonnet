@@ -171,8 +171,8 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local c =
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
         container.withEnv([
-          env.new('GF_RENDERING_SERVER_URL', 'http://renderer:' + imageRendererPort + '/render'),
-          env.new('GF_RENDERING_CALLBACK_URL', 'http://grafana:' + targetPort),
+          env.new('GF_RENDERING_SERVER_URL', 'http://localhost:' + imageRendererPort + '/render'),
+          env.new('GF_RENDERING_CALLBACK_URL', 'http://localhost:' + targetPort),
           plugins,
         ]) +
         container.withVolumeMounts(volumeMounts) +
