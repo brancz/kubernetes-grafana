@@ -169,9 +169,9 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
       local plugins = (if std.length($._config.grafana.plugins) == 0 then [] else [env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))]);
       local imageRendererEnv = (if $._config.grafana.imageRendererEnabled == false then [] else [
-        env.new('GF_RENDERING_SERVER_URL', 'http://localhost:' + imageRendererPort + '/render'),
-        env.new('GF_RENDERING_CALLBACK_URL', 'http://localhost:' + targetPort),
-      ]);
+                                  env.new('GF_RENDERING_SERVER_URL', 'http://localhost:' + imageRendererPort + '/render'),
+                                  env.new('GF_RENDERING_CALLBACK_URL', 'http://localhost:' + targetPort),
+                                ]);
 
       local c = [
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
@@ -183,11 +183,11 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits),
       ] + (if $._config.grafana.imageRendererEnabled == false then [] else [
-        container.new('grafana-image-renderer', $._config.imageRepos.grafanaImageRenderer + ':' + $._config.versions.grafanaImageRenderer) +
-        container.withPorts(containerPort.newNamed(imageRendererPort, portName)) +
-        container.mixin.resources.withRequests($._config.grafana.imageRendererContainer.requests) +
-        container.mixin.resources.withLimits($._config.grafana.imageRendererContainer.limits),
-      ]);
+             container.new('grafana-image-renderer', $._config.imageRepos.grafanaImageRenderer + ':' + $._config.versions.grafanaImageRenderer) +
+             container.withPorts(containerPort.newNamed(imageRendererPort, portName)) +
+             container.mixin.resources.withRequests($._config.grafana.imageRendererContainer.requests) +
+             container.mixin.resources.withLimits($._config.grafana.imageRendererContainer.limits),
+           ]);
 
       deployment.new('grafana', 1, c, podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
