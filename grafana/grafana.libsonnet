@@ -6,12 +6,10 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
     versions+:: {
       grafana: '6.6.0',
-      grafanaImageRenderer: '1.0.9',
     },
 
     imageRepos+:: {
       grafana: 'grafana/grafana',
-      grafanaImageRenderer: 'grafana/grafana-image-renderer',
     },
 
     prometheus+:: {
@@ -34,15 +32,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       config: {},
       ldap: null,
       plugins: [],
-      imageRendererEnabled: false,
+      env: [],
+      port: 3000,
       container: {
         requests: { cpu: '100m', memory: '100Mi' },
         limits: { cpu: '200m', memory: '200Mi' },
       },
-      imageRendererContainer: {
-        requests: { cpu: '100m', memory: '100Mi' },
-        limits: { cpu: '200m', memory: '200Mi' },
-      },
+      containers: [],
     },
   },
   grafanaDashboards: {},
@@ -86,7 +82,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-      local grafanaServiceNodePort = servicePort.newNamed('http', 3000, 'http');
+      local grafanaServiceNodePort = servicePort.newNamed('http', $._config.grafana.port, 'http');
 
       service.new('grafana', $.grafana.deployment.spec.selector.matchLabels, grafanaServiceNodePort) +
       service.mixin.metadata.withLabels({ app: 'grafana' }) +
@@ -104,8 +100,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
       local env = container.envType;
 
-      local targetPort = 3000;
-      local imageRendererPort = 8081;
+      local targetPort = $._config.grafana.port;
       local portName = 'http';
       local podLabels = { app: 'grafana' };
 
@@ -168,26 +163,17 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         if std.length($._config.grafana.config) > 0 then [configVolume] else [];
 
       local plugins = (if std.length($._config.grafana.plugins) == 0 then [] else [env.new('GF_INSTALL_PLUGINS', std.join(',', $._config.grafana.plugins))]);
-      local imageRendererEnv = (if $._config.grafana.imageRendererEnabled == false then [] else [
-                                  env.new('GF_RENDERING_SERVER_URL', 'http://localhost:' + imageRendererPort + '/render'),
-                                  env.new('GF_RENDERING_CALLBACK_URL', 'http://localhost:' + targetPort),
-                                ]);
 
       local c = [
         container.new('grafana', $._config.imageRepos.grafana + ':' + $._config.versions.grafana) +
-        container.withEnv(imageRendererEnv + plugins) +
+        container.withEnv($._config.grafana.env + plugins) +
         container.withVolumeMounts(volumeMounts) +
         container.withPorts(containerPort.newNamed(targetPort, portName)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
         container.mixin.readinessProbe.httpGet.withPort(portName) +
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits),
-      ] + (if $._config.grafana.imageRendererEnabled == false then [] else [
-             container.new('grafana-image-renderer', $._config.imageRepos.grafanaImageRenderer + ':' + $._config.versions.grafanaImageRenderer) +
-             container.withPorts(containerPort.newNamed(imageRendererPort, portName)) +
-             container.mixin.resources.withRequests($._config.grafana.imageRendererContainer.requests) +
-             container.mixin.resources.withLimits($._config.grafana.imageRendererContainer.limits),
-           ]);
+      ] + $._config.grafana.containers;
 
       deployment.new('grafana', 1, c, podLabels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
