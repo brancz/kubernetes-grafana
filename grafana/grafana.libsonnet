@@ -20,6 +20,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
     grafana+:: {
       dashboards: {},
       rawDashboards: {},
+      folderDashboards: {},
       datasources: [{
         name: 'prometheus',
         type: 'prometheus',
@@ -57,6 +58,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         configMap.mixin.metadata.withNamespace($._config.namespace)
 
         for name in std.objectFields($._config.grafana.dashboards)
+      ] + [
+        local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+        configMap.new(dashboardName, { [name]: std.manifestJsonEx($._config.grafana.folderDashboards[folder][name], '    ') }) +
+        configMap.mixin.metadata.withNamespace($._config.namespace)
+
+        for folder in std.objectFields($._config.grafana.folderDashboards)
+        for name in std.objectFields($._config.grafana.folderDashboards[folder])
       ] + if std.length($._config.grafana.rawDashboards) > 0 then
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
@@ -67,7 +75,31 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         ] else [],
     dashboardSources:
       local configMap = k.core.v1.configMap;
-      local dashboardSources = import 'configs/dashboard-sources/dashboards.libsonnet';
+      local dashboardSources = {
+        apiVersion: 1,
+        providers: [
+          {
+            name: '0',
+            orgId: 1,
+            folder: 'Default',
+            type: 'file',
+            options: {
+              path: '/grafana-dashboard-definitions/0',
+            },
+          },
+        ] + [
+          {
+            name: folder,
+            orgId: 1,
+            folder: folder,
+            type: 'file',
+            options: {
+              path: '/grafana-dashboard-definitions/' + folder,
+            },
+          }
+          for folder in std.objectFields($._config.grafana.folderDashboards)
+        ],
+      };
 
       configMap.new('grafana-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
       configMap.mixin.metadata.withNamespace($._config.namespace),
@@ -136,6 +168,12 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         ] +
         [
           local dashboardName = std.strReplace(name, '.json', '');
+          containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/' + folder + '/' + dashboardName)
+          for folder in std.objectFields($._config.grafana.folderDashboards)
+          for name in std.objectFields($._config.grafana.folderDashboards[folder])
+        ] +
+        [
+          local dashboardName = std.strReplace(name, '.json', '');
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
           for name in std.objectFields($._config.grafana.rawDashboards)
         ] +
@@ -153,6 +191,13 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
           volume.withName(dashboardName) +
           volume.mixin.configMap.withName(dashboardName)
           for name in std.objectFields($._config.grafana.dashboards)
+        ] +
+        [
+          local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
+          volume.withName(dashboardName) +
+          volume.mixin.configMap.withName(dashboardName)
+          for folder in std.objectFields($._config.grafana.folderDashboards)
+          for name in std.objectFields($._config.grafana.folderDashboards[folder])
         ] +
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
