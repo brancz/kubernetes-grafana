@@ -77,28 +77,33 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local configMap = k.core.v1.configMap;
       local dashboardSources = {
         apiVersion: 1,
-        providers: [
-          {
-            name: '0',
-            orgId: 1,
-            folder: 'Default',
-            type: 'file',
-            options: {
-              path: '/grafana-dashboard-definitions/0',
-            },
-          },
-        ] + [
-          {
-            name: folder,
-            orgId: 1,
-            folder: folder,
-            type: 'file',
-            options: {
-              path: '/grafana-dashboard-definitions/' + folder,
-            },
-          }
-          for folder in std.objectFields($._config.grafana.folderDashboards)
-        ],
+        providers:
+          (
+            if std.length($._config.grafana.dashboards) +
+               std.length($._config.grafana.rawDashboards) > 0 then [
+              {
+                name: '0',
+                orgId: 1,
+                folder: 'Default',
+                type: 'file',
+                options: {
+                  path: '/grafana-dashboard-definitions/0',
+                },
+              },
+            ] else []
+          ) +
+          [
+            {
+              name: folder,
+              orgId: 1,
+              folder: folder,
+              type: 'file',
+              options: {
+                path: '/grafana-dashboard-definitions/' + folder,
+              },
+            }
+            for folder in std.objectFields($._config.grafana.folderDashboards)
+          ],
       };
 
       configMap.new('grafana-dashboards', { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') }) +
