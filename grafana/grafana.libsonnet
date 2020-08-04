@@ -221,6 +221,11 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         container.withPorts(containerPort.newNamed(targetPort, portName)) +
         container.mixin.readinessProbe.httpGet.withPath('/api/health') +
         container.mixin.readinessProbe.httpGet.withPort(portName) +
+        container.mixin.livenessProbe.withInitialDelaySeconds(60) +
+        container.mixin.livenessProbe.withTimeoutSeconds(30) +
+        container.mixin.livenessProbe.withFailureThreshold(10) +
+        container.mixin.livenessProbe.httpGet.withPort('http') +
+        container.mixin.livenessProbe.httpGet.withPath('/api/health') +
         container.mixin.resources.withRequests($._config.grafana.container.requests) +
         container.mixin.resources.withLimits($._config.grafana.container.limits),
       ] + $._config.grafana.containers;
