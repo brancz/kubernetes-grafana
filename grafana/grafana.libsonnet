@@ -237,6 +237,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       deployment.mixin.spec.template.spec.withVolumes(volumes) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsNonRoot(true) +
       deployment.mixin.spec.template.spec.securityContext.withRunAsUser(65534) +
+      deployment.mixin.spec.template.spec.securityContext.withFsGroup(65534) +
       deployment.mixin.spec.template.spec.withServiceAccountName('grafana'),
   },
 }
