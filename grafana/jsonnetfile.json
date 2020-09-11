@@ -1,19 +1,19 @@
 {
+  "version": 1,
   "dependencies": [
     {
       "source": {
         "git": {
-          "remote": "https://github.com/grafana/grafonnet-lib",
+          "remote": "https://github.com/grafana/grafonnet-lib.git",
           "subdir": "grafonnet"
         }
       },
-      "version": "master",
-      "name": "grafonnet"
+      "version": "master"
     },
     {
       "source": {
         "git": {
-          "remote": "https://github.com/ksonnet/ksonnet-lib",
+          "remote": "https://github.com/ksonnet/ksonnet-lib.git",
           "subdir": ""
         }
       },
@@ -21,5 +21,5 @@
       "name": "ksonnet"
     }
   ],
-  "legacyImports": true
+  "legacyImports": false
 }

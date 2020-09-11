@@ -1,8 +1,8 @@
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-local grafana = import 'grafonnet/grafana.libsonnet';
+local grafana = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local row = grafana.row;
 local prometheus = grafana.prometheus;
