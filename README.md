@@ -41,7 +41,7 @@ An example of how to use it could be:
 
 [embedmd]:# (examples/basic.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
@@ -81,11 +81,11 @@ This setup is optimized to work best when Grafana is used declaratively, so when
 
 [embedmd]:# (examples/dashboard-definition.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-local grafana = import 'grafonnet/grafana.libsonnet';
+local grafana = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local row = grafana.row;
 local prometheus = grafana.prometheus;
@@ -147,7 +147,7 @@ If you have many dashboards and would like to organize them into folders, you ca
 
 [embedmd]:# (examples/dashboard-folder-definition.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
@@ -211,7 +211,7 @@ And apply the mixin:
 
 [embedmd]:# (examples/basic-with-mixin.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
@@ -258,7 +258,7 @@ For example to modify Grafana configuration and set up LDAP use:
 
 [embedmd]:# (examples/custom-ini.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
@@ -316,7 +316,7 @@ The config object allows specifying an array of plugins to install at startup.
 
 [embedmd]:# (examples/plugins.jsonnet)
 ```jsonnet
-local k = import 'ksonnet/ksonnet.beta.3/k.libsonnet';
+local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
 local service = k.core.v1.service;
 local servicePort = k.core.v1.service.mixin.spec.portsType;
 
