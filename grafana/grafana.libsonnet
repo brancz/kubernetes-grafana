@@ -30,6 +30,7 @@ local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
         version: 1,
         editable: false,
       }],
+      notifiers: [],
       config: {},
       ldap: null,
       plugins: [],
@@ -115,6 +116,13 @@ local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
         datasources: $._config.grafana.datasources,
       }, '    '))) }) +
       secret.mixin.metadata.withNamespace($._config.namespace),
+    [if std.length($._config.grafana.notifiers) > 0 then 'notifiers']:
+      local secret = k.core.v1.secret;
+      secret.new('grafana-notifiers', { 'notifiers.yaml': std.base64(std.manifestJsonEx({
+        apiVersion: 1,
+        notifiers: $._config.grafana.notifiers,
+      }, '    ')) }) +
+      secret.mixin.metadata.withNamespace($._config.namespace),
     service:
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
@@ -160,12 +168,21 @@ local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
       local dashboardsVolume = volume.withName(dashboardsVolumeName) + volume.mixin.configMap.withName(dashboardsConfigMapName);
       local dashboardsVolumeMount = containerVolumeMount.new(dashboardsVolumeName, '/etc/grafana/provisioning/dashboards');
 
+      local hasNotifiers = std.objectHas($.grafana, 'notifiers');
+      local notifiersVolumeName = 'grafana-notifiers';
+      local notifiersSecretName = 'grafana-notifiers';
+      local notifiersVolume = volume.withName(notifiersVolumeName) + volume.mixin.secret.withSecretName(notifiersSecretName);
+      local notifiersVolumeMount = containerVolumeMount.new(notifiersVolumeName, '/etc/grafana/provisioning/notifiers');
+      local notifiersVolumes = if hasNotifiers then [notifiersVolume] else [];
+      local notifiersVolumeMounts = if hasNotifiers then [notifiersVolumeMount] else [];
+
       local volumeMounts =
         [
           storageVolumeMount,
           datasourcesVolumeMount,
           dashboardsVolumeMount,
         ] +
+        notifiersVolumeMounts +
         [
           local dashboardName = std.strReplace(name, '.json', '');
           containerVolumeMount.new('grafana-dashboard-' + dashboardName, '/grafana-dashboard-definitions/0/' + dashboardName)
@@ -191,6 +208,7 @@ local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
           datasourcesVolume,
           dashboardsVolume,
         ] +
+        notifiersVolumes +
         [
           local dashboardName = 'grafana-dashboard-' + std.strReplace(name, '.json', '');
           volume.withName(dashboardName) +
