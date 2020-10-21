@@ -9,16 +9,6 @@
         }
       },
       "version": "master"
-    },
-    {
-      "source": {
-        "git": {
-          "remote": "https://github.com/ksonnet/ksonnet-lib.git",
-          "subdir": ""
-        }
-      },
-      "version": "master",
-      "name": "ksonnet"
     }
   ],
   "legacyImports": false
