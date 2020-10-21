@@ -41,28 +41,35 @@ An example of how to use it could be:
 
 [embedmd]:# (examples/basic.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
+local grafana = import 'grafana/grafana.libsonnet';
 
-local grafana = ((import 'grafana/grafana.libsonnet') + {
-                   _config+:: {
-                     namespace: 'monitoring-grafana',
-                   },
-                 }).grafana;
+{
+  local basic =
+    (grafana {
+       _config+:: {
+         namespace: 'monitoring-grafana',
+       },
+     }).grafana,
 
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    basic.dashboardDefinitions +
+    [
+      basic.dashboardSources,
+      basic.dashboardDatasources,
+      basic.deployment,
+      basic.serviceAccount,
+      basic.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
+      },
+    ],
+}
 ```
 
 This builds the entire Grafana stack with your own dashboards and a configurable namespace.
@@ -81,10 +88,6 @@ This setup is optimized to work best when Grafana is used declaratively, so when
 
 [embedmd]:# (examples/dashboard-definition.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
-
 local grafana = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local row = grafana.row;
@@ -92,8 +95,10 @@ local prometheus = grafana.prometheus;
 local template = grafana.template;
 local graphPanel = grafana.graphPanel;
 
-local grafana =
-  ((import 'grafana/grafana.libsonnet') +
+local grafana = import 'grafana/grafana.libsonnet';
+
+local grafanaWithDashboards =
+  (grafana
    {
      _config+:: {
        namespace: 'monitoring-grafana',
@@ -119,26 +124,36 @@ local grafana =
              )
              .addRow(
                row.new()
-               .addPanel(graphPanel.new('My Panel', span=6, datasource='$datasource')
-                         .addTarget(prometheus.target('vector(1)')))
+               .addPanel(
+                 graphPanel.new('My Panel', span=6, datasource='$datasource')
+                 .addTarget(prometheus.target('vector(1)')),
+               )
              ),
          },
        },
      },
    }).grafana;
 
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+{
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    grafanaWithDashboards.dashboardDefinitions +
+    [
+      grafanaWithDashboards.dashboardSources,
+      grafanaWithDashboards.dashboardDatasources,
+      grafanaWithDashboards.deployment,
+      grafanaWithDashboards.serviceAccount,
+      grafanaWithDashboards.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
+      },
+    ],
+}
 ```
 
 #### Organizing dashboards
@@ -147,10 +162,6 @@ If you have many dashboards and would like to organize them into folders, you ca
 
 [embedmd]:# (examples/dashboard-folder-definition.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
-
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local row = grafana.row;
@@ -158,8 +169,10 @@ local prometheus = grafana.prometheus;
 local template = grafana.template;
 local graphPanel = grafana.graphPanel;
 
-local grafana =
-  ((import 'grafana/grafana.libsonnet') +
+local grafana = import 'grafana/grafana.libsonnet';
+
+local grafanaWithDashboards =
+  (grafana
    {
      _config+:: {
        namespace: 'monitoring-grafana',
@@ -179,24 +192,32 @@ local grafana =
              'istio-galley-dashboard.json': (import 'dashboards/istio-galley-dashboard.json'),
              'istio-mesh-dashboard.json': (import 'dashboards/istio-mesh-dashboard.json'),
              'istio-pilot-dashboard.json': (import 'dashboards/istio-pilot-dashboard.json'),
-           }
+           },
          },
        },
      },
    }).grafana;
 
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+{
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    grafanaWithDashboards.dashboardDefinitions +
+    [
+      grafanaWithDashboards.dashboardSources,
+      grafanaWithDashboards.dashboardDatasources,
+      grafanaWithDashboards.deployment,
+      grafanaWithDashboards.serviceAccount,
+      grafanaWithDashboards.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
+      },
+    ],
+}
 ```
 
 #### Dashboards mixins
@@ -211,35 +232,39 @@ And apply the mixin:
 
 [embedmd]:# (examples/basic-with-mixin.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
+local kubernetesMixin = import 'github.com/kubernetes-monitoring/kubernetes-mixin/mixin.libsonnet';
+local grafana = import 'grafana/grafana.libsonnet';
 
-local grafana = (
-  (import 'grafana/grafana.libsonnet') +
-  (import 'kubernetes-mixin/mixin.libsonnet') +
-  {
-    _config+:: {
-      namespace: 'monitoring-grafana',
-      grafana+:: {
-        dashboards: $.grafanaDashboards,
+{
+  local basicWithMixin =
+    (grafana {
+       _config+:: {
+         namespace: 'monitoring-grafana',
+         grafana+:: {
+           dashboards: kubernetesMixin.grafanaDashboards,
+         },
+       },
+     }).grafana,
+
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    basicWithMixin.dashboardDefinitions +
+    [
+      basicWithMixin.dashboardSources,
+      basicWithMixin.dashboardDatasources,
+      basicWithMixin.deployment,
+      basicWithMixin.serviceAccount,
+      basicWithMixin.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
       },
-    },
-  }
-).grafana;
-
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+    ],
+}
 ```
 
 To generate, again simply run:
@@ -258,56 +283,63 @@ For example to modify Grafana configuration and set up LDAP use:
 
 [embedmd]:# (examples/custom-ini.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
+local grafana = import 'grafana/grafana.libsonnet';
 
-local grafana = ((import 'grafana/grafana.libsonnet') + {
-                   _config+:: {
-                     namespace: 'monitoring-grafana',
-                     grafana+:: {
-                       config: {
-                         sections: {
-                           metrics: { enabled: true },
-                           'auth.ldap': {
-                             enabled: true,
-                             config_file: '/etc/grafana/ldap.toml',
-                             allow_sign_up: true,
-                           },
-                         },
-                       },
-                       ldap: |||
-                         [[servers]]
-                         host = "127.0.0.1"
-                         port = 389
-                         use_ssl = false
-                         start_tls = false
-                         ssl_skip_verify = false
+{
+  local customIni =
+    (grafana {
+       _config+:: {
+         namespace: 'monitoring-grafana',
+         grafana+:: {
+           config: {
+             sections: {
+               metrics: { enabled: true },
+               'auth.ldap': {
+                 enabled: true,
+                 config_file: '/etc/grafana/ldap.toml',
+                 allow_sign_up: true,
+               },
+             },
+           },
+           ldap: |||
+             [[servers]]
+             host = "127.0.0.1"
+             port = 389
+             use_ssl = false
+             start_tls = false
+             ssl_skip_verify = false
 
-                         bind_dn = "cn=admin,dc=grafana,dc=org"
-                         bind_password = 'grafana'
+             bind_dn = "cn=admin,dc=grafana,dc=org"
+             bind_password = 'grafana'
 
-                         search_filter = "(cn=%s)"
+             search_filter = "(cn=%s)"
 
-                         search_base_dns = ["dc=grafana,dc=org"]
-                       |||,
-                     },
-                   },
-                 }).grafana;
+             search_base_dns = ["dc=grafana,dc=org"]
+           |||,
+         },
+       },
+     }).grafana,
 
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.config,
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    customIni.dashboardDefinitions +
+    [
+      customIni.config,
+      customIni.dashboardSources,
+      customIni.dashboardDatasources,
+      customIni.deployment,
+      customIni.serviceAccount,
+      customIni.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
+      },
+    ],
+}
 ```
 
 #### Plugins
@@ -316,31 +348,38 @@ The config object allows specifying an array of plugins to install at startup.
 
 [embedmd]:# (examples/plugins.jsonnet)
 ```jsonnet
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
+local grafana = import 'grafana/grafana.libsonnet';
 
-local grafana = ((import 'grafana/grafana.libsonnet') + {
-                   _config+:: {
-                     namespace: 'monitoring-grafana',
-                     grafana+:: {
-                       plugins: ['camptocamp-prometheus-alertmanager-datasource'],
-                     },
-                   },
-                 }).grafana;
+{
+  local basic =
+    (grafana {
+       _config+:: {
+         namespace: 'monitoring-grafana',
+         grafana+:: {
+           plugins: ['camptocamp-prometheus-alertmanager-datasource'],
+         },
+       },
+     }).grafana,
 
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    basic.dashboardDefinitions +
+    [
+      basic.dashboardSources,
+      basic.dashboardDatasources,
+      basic.deployment,
+      basic.serviceAccount,
+      basic.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
+      },
+    ],
+}
 ```
 
 # Roadmap
