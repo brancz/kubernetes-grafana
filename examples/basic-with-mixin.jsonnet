@@ -1,29 +1,33 @@
-local k = import 'github.com/ksonnet/ksonnet-lib/ksonnet.beta.4/k.libsonnet';
-local service = k.core.v1.service;
-local servicePort = k.core.v1.service.mixin.spec.portsType;
+local kubernetesMixin = import 'github.com/kubernetes-monitoring/kubernetes-mixin/mixin.libsonnet';
+local grafana = import 'grafana/grafana.libsonnet';
 
-local grafana = (
-  (import 'grafana/grafana.libsonnet') +
-  (import 'kubernetes-mixin/mixin.libsonnet') +
-  {
-    _config+:: {
-      namespace: 'monitoring-grafana',
-      grafana+:: {
-        dashboards: $.grafanaDashboards,
+{
+  local basicWithMixin =
+    (grafana {
+       _config+:: {
+         namespace: 'monitoring-grafana',
+         grafana+:: {
+           dashboards: kubernetesMixin.grafanaDashboards,
+         },
+       },
+     }).grafana,
+
+  apiVersion: 'v1',
+  kind: 'List',
+  items:
+    basicWithMixin.dashboardDefinitions +
+    [
+      basicWithMixin.dashboardSources,
+      basicWithMixin.dashboardDatasources,
+      basicWithMixin.deployment,
+      basicWithMixin.serviceAccount,
+      basicWithMixin.service {
+        spec+: { ports: [
+          port {
+            nodePort: 30910,
+          }
+          for port in super.ports
+        ] },
       },
-    },
-  }
-).grafana;
-
-k.core.v1.list.new(
-  grafana.dashboardDefinitions +
-  [
-    grafana.dashboardSources,
-    grafana.dashboardDatasources,
-    grafana.deployment,
-    grafana.serviceAccount,
-    grafana.service +
-    service.mixin.spec.withPorts(servicePort.newNamed('http', 3000, 'http') + servicePort.withNodePort(30910)) +
-    service.mixin.spec.withType('NodePort'),
-  ]
-)
+    ],
+}
