@@ -33,7 +33,7 @@
       plugins: [],
       env: [],
       port: 3000,
-      container: {
+      resources: {
         requests: { cpu: '100m', memory: '100Mi' },
         limits: { cpu: '200m', memory: '200Mi' },
       },
@@ -295,10 +295,7 @@
         readinessProbe: {
           httpGet: { path: '/api/health', port: portName },
         },
-        resources: {
-          requests: { cpu: '100m', memory: '100Mi' },
-          limits: { cpu: '200m', memory: '200Mi' },
-        },
+        resources: $._config.grafana.resources,
       }] + $._config.grafana.containers;
 
       {
