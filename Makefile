@@ -1,3 +1,5 @@
+all: build generate
+
 fmt:
 	@echo -e "\033[1m>> Formatting all jsonnet files\033[0m"
 	find -iname '*.libsonnet' | awk '{print $1}' | xargs jsonnetfmt -i $1
