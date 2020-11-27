@@ -3,7 +3,7 @@
     namespace: 'default',
 
     versions+:: {
-      grafana: '6.6.0',
+      grafana: '7.3.4',
     },
 
     imageRepos+:: {
