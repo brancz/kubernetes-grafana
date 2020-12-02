@@ -317,6 +317,7 @@
               annotations: {
                 [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
                 'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
+                'checksum/grafana-dashboards': std.md5(std.toString($.grafana.dashboardDefinitions)),
               },
             },
             spec: {
