@@ -1,3 +1,5 @@
+SHELL=/bin/bash -o pipefail
+
 all: build generate
 
 fmt:

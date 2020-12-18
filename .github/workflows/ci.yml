@@ -1,0 +1,33 @@
+---
+name: ci
+on:
+  - push
+  - pull_request
+env:
+  golang-version: '1.15'
+jobs:
+  generate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+    name: Generate
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.golang-version }}
+    - run: go get github.com/google/go-jsonnet/cmd/jsonnetfmt
+    - run: make generate
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.golang-version }}
+    - run: go get github.com/google/go-jsonnet/cmd/jsonnet
+    - run: make build
