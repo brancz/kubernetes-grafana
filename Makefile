@@ -1,8 +1,10 @@
+SHELL=/bin/bash -o pipefail
+
 all: build generate
 
 fmt:
 	@echo -e "\033[1m>> Formatting all jsonnet files\033[0m"
-	find -iname '*.libsonnet' | awk '{print $1}' | xargs jsonnetfmt -i $1
+	find . -name 'vendor' -prune -o -name '*.libsonnet' -print -o -name '*.jsonnet' -print | xargs -n 1 -- jsonnetfmt -i
 
 generate: fmt docs
 	git diff --exit-code
