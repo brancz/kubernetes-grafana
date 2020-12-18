@@ -16,6 +16,11 @@
     },
 
     grafana+:: {
+      labels: {
+        'app.kubernetes.io/name': 'grafana',
+        'app.kubernetes.io/version': $._config.versions.grafana,
+        'app.kubernetes.io/component': 'grafana',
+      },
       dashboards: {},
       rawDashboards: {},
       folderDashboards: {},
@@ -51,6 +56,7 @@
         metadata: {
           name: 'grafana-config',
           namespace: $._config.namespace,
+          labels: $._config.grafana.labels,
         },
         type: 'Opaque',
         data: {
@@ -67,6 +73,7 @@
           metadata: {
             name: dashboardName,
             namespace: $._config.namespace,
+            labels: $._config.grafana.labels,
           },
           data: { [name]: std.manifestJsonEx($._config.grafana.dashboards[name], '    ') },
         }
@@ -79,6 +86,7 @@
           metadata: {
             name: dashboardName,
             namespace: $._config.namespace,
+            labels: $._config.grafana.labels,
           },
           data: { [name]: std.manifestJsonEx($._config.grafana.folderDashboards[folder][name], '    ') },
         }
@@ -95,6 +103,7 @@
               metadata: {
                 name: dashboardName,
                 namespace: $._config.namespace,
+                labels: $._config.grafana.labels,
               },
               data: { [name]: $._config.grafana.rawDashboards[name] },
             }
@@ -141,6 +150,7 @@
         metadata: {
           name: 'grafana-dashboards',
           namespace: $._config.namespace,
+          labels: $._config.grafana.labels,
         },
         data: { 'dashboards.yaml': std.manifestJsonEx(dashboardSources, '    ') },
       },
@@ -151,6 +161,7 @@
         metadata: {
           name: 'grafana-datasources',
           namespace: $._config.namespace,
+          labels: $._config.grafana.labels,
         },
         type: 'Opaque',
         data: { 'datasources.yaml': std.base64(std.encodeUTF8(std.manifestJsonEx({
@@ -165,9 +176,7 @@
         metadata: {
           name: 'grafana',
           namespace: $._config.namespace,
-          labels: {
-            app: 'grafana',
-          },
+          labels: $._config.grafana.labels,
         },
         spec: {
           selector: $.grafana.deployment.spec.selector.matchLabels,
@@ -189,7 +198,12 @@
     deployment:
       local targetPort = $._config.grafana.port;
       local portName = 'http';
-      local podLabels = { app: 'grafana' };
+      local podLabels = $._config.grafana.labels;
+      local podSelectorLabels = {
+        [labelName]: podLabels[labelName]
+        for labelName in std.objectFields(podLabels)
+        if !std.setMember(labelName, ['app.kubernetes.io/version'])
+      };
 
       local configVolumeName = 'grafana-config';
       local configSecretName = 'grafana-config';
@@ -311,7 +325,7 @@
         spec: {
           replicas: 1,
           selector: {
-            matchLabels: podLabels,
+            matchLabels: podSelectorLabels,
           },
           template: {
             metadata: {
