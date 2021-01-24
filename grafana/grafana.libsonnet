@@ -7,7 +7,7 @@
     },
 
     imageRepos+:: {
-      grafana: 'grafana/grafana',
+      grafana: 'docker.io/grafana/grafana',
     },
 
     prometheus+:: {
