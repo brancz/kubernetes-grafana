@@ -180,7 +180,6 @@
         },
         spec: {
           selector: $.grafana.deployment.spec.selector.matchLabels,
-          type: 'NodePort',
           ports: [
             { name: 'http', targetPort: 'http', port: 3000 },
           ],
