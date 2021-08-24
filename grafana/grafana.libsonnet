@@ -339,7 +339,7 @@
               containers: c,
               volumes: volumes,
               serviceAccountName: $.grafana.serviceAccount.metadata.name,
-              nodeSelector: { 'beta.kubernetes.io/os': 'linux' },
+              nodeSelector: { 'kubernetes.io/os': 'linux' },
               securityContext: { fsGroup: 65534, runAsNonRoot: true, runAsUser: 65534 },
             },
           },
