@@ -24,6 +24,7 @@
       dashboards: {},
       rawDashboards: {},
       folderDashboards: {},
+      folderUidGenerator(folder): '',
       datasources: [{
         name: 'prometheus',
         type: 'prometheus',
@@ -123,6 +124,7 @@
                 name: '0',
                 orgId: 1,
                 folder: 'Default',
+                folderUid: $._config.grafana.folderUidGenerator('Default'),
                 type: 'file',
                 options: {
                   path: '/grafana-dashboard-definitions/0',
@@ -135,6 +137,7 @@
               name: folder,
               orgId: 1,
               folder: folder,
+              folderUid: $._config.grafana.folderUidGenerator(folder),
               type: 'file',
               options: {
                 path: '/grafana-dashboard-definitions/' + folder,
@@ -333,6 +336,7 @@
                 [if std.length($._config.grafana.config) > 0 then 'checksum/grafana-config']: std.md5(std.toString($.grafana.config)),
                 'checksum/grafana-datasources': std.md5(std.toString($.grafana.dashboardDatasources)),
                 [if $._config.grafana.dashboardsChecksum then 'checksum/grafana-dashboards']: std.md5(std.toString($.grafana.dashboardDefinitions)),
+                'checksum/grafana-dashboardproviders': std.md5(std.toString($.grafana.dashboardSources)),
               },
             },
             spec: {
