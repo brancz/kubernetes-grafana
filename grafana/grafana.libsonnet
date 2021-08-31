@@ -36,7 +36,11 @@
       }],
       // Forces pod restarts when dashboards are changed
       dashboardsChecksum: false,
-      config: {},
+      config: {
+        sections: {
+          date_formats: { default_timezone: 'UTC' },
+        },
+      },
       ldap: null,
       plugins: [],
       env: [],
