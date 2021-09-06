@@ -65,9 +65,9 @@
         },
         type: 'Opaque',
         stringData: {
-                      'grafana.ini': std.encodeUTF8(std.manifestIni($._config.grafana.config)),
+                      'grafana.ini': std.manifestIni($._config.grafana.config),
                     } +
-                    if $._config.grafana.ldap != null then { 'ldap.toml': std.encodeUTF8($._config.grafana.ldap) } else {},
+                    if $._config.grafana.ldap != null then { 'ldap.toml': $._config.grafana.ldap } else {},
       },
     dashboardDefinitions:
       [
@@ -171,10 +171,10 @@
           labels: $._config.grafana.labels,
         },
         type: 'Opaque',
-        stringData: { 'datasources.yaml': std.encodeUTF8(std.manifestJsonEx({
+        stringData: { 'datasources.yaml': std.manifestJsonEx({
           apiVersion: 1,
           datasources: $._config.grafana.datasources,
-        }, '    ')) },
+        }, '    ') },
       },
     service:
       {
