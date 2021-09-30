@@ -176,6 +176,36 @@
           datasources: $._config.grafana.datasources,
         }, '    ') },
       },
+    notifierSources:
+      local notifierSources = {
+        notifiers:
+          (
+            if std.length($._config.grafana.notifiers) > 0 then
+                $._config.grafana.notifiers
+            else [
+              {
+                name: "grafana-default-channel",
+                type: "email",
+                uid: "default-channel-uid",
+                org_id: 1,
+                is_default: true,
+                settings:
+                {addresses: "no-reply@company.tld"}
+              }
+            ]
+          )
+      };
+
+      {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'grafana-notifiers',
+          namespace: $._config.namespace,
+          labels: $._config.grafana.labels,
+        },
+        data: { 'notifiers.yaml': std.manifestJsonEx(notifierSources, '    ') },
+      },
     service:
       {
         apiVersion: 'v1',
@@ -230,11 +260,17 @@
       local dashboardsVolume = { name: dashboardsVolumeName, configMap: { name: dashboardsConfigMapName } };
       local dashboardsVolumeMount = { name: dashboardsVolumeName, mountPath: '/etc/grafana/provisioning/dashboards', readOnly: false };
 
+      local notifiersVolumeName = 'grafana-notifiers';
+      local notifiersConfigMapName = 'grafana-notifiers';
+      local notifiersVolume = { name: notifiersVolumeName, configMap: { name: notifiersConfigMapName } };
+      local notifiersVolumeMount = { name: notifiersVolumeName, mountPath: '/etc/grafana/provisioning/notifiers', readOnly: false };
+
       local volumeMounts =
         [
           storageVolumeMount,
           datasourcesVolumeMount,
           dashboardsVolumeMount,
+          notifiersVolumeMount,
         ] +
         [
           {
@@ -273,6 +309,7 @@
           storageVolume,
           datasourcesVolume,
           dashboardsVolume,
+          notifiersVolume,
         ] +
         [
           {
