@@ -2,32 +2,21 @@ local kubernetesMixin = import 'github.com/kubernetes-monitoring/kubernetes-mixi
 local grafana = import 'grafana/grafana.libsonnet';
 
 {
-  local basicWithMixin =
-    (grafana {
-       _config+:: {
-         namespace: 'monitoring-grafana',
-         grafana+:: {
-           dashboards: kubernetesMixin.grafanaDashboards,
-         },
-       },
-     }).grafana,
+  _config:: {
+    namespace: 'monitoring-grafana',
+    dashboards: kubernetesMixin.grafanaDashboards,
+  },
 
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    basicWithMixin.dashboardDefinitions +
-    [
-      basicWithMixin.dashboardSources,
-      basicWithMixin.dashboardDatasources,
-      basicWithMixin.deployment,
-      basicWithMixin.serviceAccount,
-      basicWithMixin.service {
-        spec+: { ports: [
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
