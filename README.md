@@ -44,31 +44,22 @@ An example of how to use it could be:
 local grafana = import 'grafana/grafana.libsonnet';
 
 {
-  local basic =
-    (grafana {
-       _config+:: {
-         namespace: 'monitoring-grafana',
-       },
-     }).grafana,
+  _config:: {
+    namespace: 'monitoring-grafana',
+  },
 
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    basic.dashboardDefinitions +
-    [
-      basic.dashboardSources,
-      basic.dashboardDatasources,
-      basic.deployment,
-      basic.serviceAccount,
-      basic.service {
-        spec+: { ports: [
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
 ```
 
@@ -88,71 +79,59 @@ This setup is optimized to work best when Grafana is used declaratively, so when
 
 [embedmd]:# (examples/dashboard-definition.jsonnet)
 ```jsonnet
-local grafana = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
-local dashboard = grafana.dashboard;
-local row = grafana.row;
-local prometheus = grafana.prometheus;
-local template = grafana.template;
-local graphPanel = grafana.graphPanel;
+local grafonnet = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
+local dashboard = grafonnet.dashboard;
+local row = grafonnet.row;
+local prometheus = grafonnet.prometheus;
+local template = grafonnet.template;
+local graphPanel = grafonnet.graphPanel;
 
 local grafana = import 'grafana/grafana.libsonnet';
 
-local grafanaWithDashboards =
-  (grafana
-   {
-     _config+:: {
-       namespace: 'monitoring-grafana',
-       grafana+:: {
-         dashboards+:: {
-           'my-dashboard.json':
-             dashboard.new('My Dashboard')
-             .addTemplate(
-               {
-                 current: {
-                   text: 'Prometheus',
-                   value: 'Prometheus',
-                 },
-                 hide: 0,
-                 label: null,
-                 name: 'datasource',
-                 options: [],
-                 query: 'prometheus',
-                 refresh: 1,
-                 regex: '',
-                 type: 'datasource',
-               },
-             )
-             .addRow(
-               row.new()
-               .addPanel(
-                 graphPanel.new('My Panel', span=6, datasource='$datasource')
-                 .addTarget(prometheus.target('vector(1)')),
-               )
-             ),
-         },
-       },
-     },
-   }).grafana;
-
 {
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    grafanaWithDashboards.dashboardDefinitions +
-    [
-      grafanaWithDashboards.dashboardSources,
-      grafanaWithDashboards.dashboardDatasources,
-      grafanaWithDashboards.deployment,
-      grafanaWithDashboards.serviceAccount,
-      grafanaWithDashboards.service {
-        spec+: { ports: [
+  _config:: {
+    namespace: 'monitoring-grafana',
+    dashboards+: {
+      'my-dashboard.json':
+        dashboard.new('My Dashboard')
+        .addTemplate(
+          {
+            current: {
+              text: 'Prometheus',
+              value: 'Prometheus',
+            },
+            hide: 0,
+            label: null,
+            name: 'datasource',
+            options: [],
+            query: 'prometheus',
+            refresh: 1,
+            regex: '',
+            type: 'datasource',
+          },
+        )
+        .addRow(
+          row.new()
+          .addPanel(
+            graphPanel.new('My Panel', span=6, datasource='$datasource')
+            .addTarget(prometheus.target('vector(1)')),
+          )
+        ),
+    },
+  },
+
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
 ```
 
@@ -162,61 +141,49 @@ If you have many dashboards and would like to organize them into folders, you ca
 
 [embedmd]:# (examples/dashboard-folder-definition.jsonnet)
 ```jsonnet
-local grafana = import 'grafonnet/grafana.libsonnet';
-local dashboard = grafana.dashboard;
-local row = grafana.row;
-local prometheus = grafana.prometheus;
-local template = grafana.template;
-local graphPanel = grafana.graphPanel;
+local grafonnet = import 'github.com/grafana/grafonnet-lib/grafonnet/grafana.libsonnet';
+local dashboard = grafonnet.dashboard;
+local row = grafonnet.row;
+local prometheus = grafonnet.prometheus;
+local template = grafonnet.template;
+local graphPanel = grafonnet.graphPanel;
 
 local grafana = import 'grafana/grafana.libsonnet';
 
-local grafanaWithDashboards =
-  (grafana
-   {
-     _config+:: {
-       namespace: 'monitoring-grafana',
-       grafana+:: {
-         folderDashboards+:: {
-           Services: {
-             'regional-services-dashboard.json': (import 'dashboards/regional-services-dashboard.json'),
-             'global-services-dashboard.json': (import 'dashboards/global-services-dashboard.json'),
-           },
-           AWS: {
-             'aws-ec2-dashboard.json': (import 'dashboards/aws-ec2-dashboard.json'),
-             'aws-rds-dashboard.json': (import 'dashboards/aws-rds-dashboard.json'),
-             'aws-sqs-dashboard.json': (import 'dashboards/aws-sqs-dashboard.json'),
-           },
-           ISTIO: {
-             'istio-citadel-dashboard.json': (import 'dashboards/istio-citadel-dashboard.json'),
-             'istio-galley-dashboard.json': (import 'dashboards/istio-galley-dashboard.json'),
-             'istio-mesh-dashboard.json': (import 'dashboards/istio-mesh-dashboard.json'),
-             'istio-pilot-dashboard.json': (import 'dashboards/istio-pilot-dashboard.json'),
-           },
-         },
-       },
-     },
-   }).grafana;
-
 {
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    grafanaWithDashboards.dashboardDefinitions +
-    [
-      grafanaWithDashboards.dashboardSources,
-      grafanaWithDashboards.dashboardDatasources,
-      grafanaWithDashboards.deployment,
-      grafanaWithDashboards.serviceAccount,
-      grafanaWithDashboards.service {
-        spec+: { ports: [
+  _config:: {
+    namespace: 'monitoring-grafana',
+    folderDashboards+: {
+      Services: {
+        'regional-services-dashboard.json': (import 'dashboards/regional-services-dashboard.json'),
+        'global-services-dashboard.json': (import 'dashboards/global-services-dashboard.json'),
+      },
+      AWS: {
+        'aws-ec2-dashboard.json': (import 'dashboards/aws-ec2-dashboard.json'),
+        'aws-rds-dashboard.json': (import 'dashboards/aws-rds-dashboard.json'),
+        'aws-sqs-dashboard.json': (import 'dashboards/aws-sqs-dashboard.json'),
+      },
+      ISTIO: {
+        'istio-citadel-dashboard.json': (import 'dashboards/istio-citadel-dashboard.json'),
+        'istio-galley-dashboard.json': (import 'dashboards/istio-galley-dashboard.json'),
+        'istio-mesh-dashboard.json': (import 'dashboards/istio-mesh-dashboard.json'),
+        'istio-pilot-dashboard.json': (import 'dashboards/istio-pilot-dashboard.json'),
+      },
+    },
+  },
+
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
 ```
 
@@ -236,34 +203,23 @@ local kubernetesMixin = import 'github.com/kubernetes-monitoring/kubernetes-mixi
 local grafana = import 'grafana/grafana.libsonnet';
 
 {
-  local basicWithMixin =
-    (grafana {
-       _config+:: {
-         namespace: 'monitoring-grafana',
-         grafana+:: {
-           dashboards: kubernetesMixin.grafanaDashboards,
-         },
-       },
-     }).grafana,
+  _config:: {
+    namespace: 'monitoring-grafana',
+    dashboards: kubernetesMixin.grafanaDashboards,
+  },
 
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    basicWithMixin.dashboardDefinitions +
-    [
-      basicWithMixin.dashboardSources,
-      basicWithMixin.dashboardDatasources,
-      basicWithMixin.deployment,
-      basicWithMixin.serviceAccount,
-      basicWithMixin.service {
-        spec+: { ports: [
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
 ```
 
@@ -287,43 +243,43 @@ local grafana = import 'grafana/grafana.libsonnet';
 
 {
   local customIni =
-    (grafana {
-       _config+:: {
-         namespace: 'monitoring-grafana',
-         grafana+:: {
-           config: {
-             sections: {
-               metrics: { enabled: true },
-               'auth.ldap': {
-                 enabled: true,
-                 config_file: '/etc/grafana/ldap.toml',
-                 allow_sign_up: true,
-               },
-             },
-           },
-           ldap: |||
-             [[servers]]
-             host = "127.0.0.1"
-             port = 389
-             use_ssl = false
-             start_tls = false
-             ssl_skip_verify = false
+    grafana({
+      _config+:: {
+        namespace: 'monitoring-grafana',
+        grafana+:: {
+          config: {
+            sections: {
+              metrics: { enabled: true },
+              'auth.ldap': {
+                enabled: true,
+                config_file: '/etc/grafana/ldap.toml',
+                allow_sign_up: true,
+              },
+            },
+          },
+          ldap: |||
+            [[servers]]
+            host = "127.0.0.1"
+            port = 389
+            use_ssl = false
+            start_tls = false
+            ssl_skip_verify = false
 
-             bind_dn = "cn=admin,dc=grafana,dc=org"
-             bind_password = 'grafana'
+            bind_dn = "cn=admin,dc=grafana,dc=org"
+            bind_password = 'grafana'
 
-             search_filter = "(cn=%s)"
+            search_filter = "(cn=%s)"
 
-             search_base_dns = ["dc=grafana,dc=org"]
-           |||,
-         },
-       },
-     }).grafana,
+            search_base_dns = ["dc=grafana,dc=org"]
+          |||,
+        },
+      },
+    }),
 
   apiVersion: 'v1',
   kind: 'List',
   items:
-    customIni.dashboardDefinitions +
+    customIni.dashboardDefinitions.items +
     [
       customIni.config,
       customIni.dashboardSources,
@@ -351,34 +307,23 @@ The config object allows specifying an array of plugins to install at startup.
 local grafana = import 'grafana/grafana.libsonnet';
 
 {
-  local basic =
-    (grafana {
-       _config+:: {
-         namespace: 'monitoring-grafana',
-         grafana+:: {
-           plugins: ['camptocamp-prometheus-alertmanager-datasource'],
-         },
-       },
-     }).grafana,
+  _config:: {
+    namespace: 'monitoring-grafana',
+    plugins: ['camptocamp-prometheus-alertmanager-datasource'],
+  },
 
-  apiVersion: 'v1',
-  kind: 'List',
-  items:
-    basic.dashboardDefinitions +
-    [
-      basic.dashboardSources,
-      basic.dashboardDatasources,
-      basic.deployment,
-      basic.serviceAccount,
-      basic.service {
-        spec+: { ports: [
+  grafana: grafana($._config) + {
+    service+: {
+      spec+: {
+        ports: [
           port {
             nodePort: 30910,
           }
           for port in super.ports
-        ] },
+        ],
       },
-    ],
+    },
+  },
 }
 ```
 
