@@ -33,6 +33,8 @@ local defaults = {
     version: 1,
     editable: false,
   }],
+  disableDeletion: false,
+  allowUiUpdates: false,
   // Forces pod restarts when dashboards are changed
   dashboardsChecksum: false,
   config: {
@@ -144,6 +146,8 @@ function(params) {
               folder: 'Default',
               folderUid: g._config.folderUidGenerator('Default'),
               type: 'file',
+              disableDeletion: g._config.disableDeletion,
+              allowUiUpdates: g._config.allowUiUpdates,
               options: {
                 path: '/grafana-dashboard-definitions/0',
               },
