@@ -202,15 +202,15 @@ function(params) {
       readOnly: false,
     };
 
-    local storageVolume = {
+    local storageVolume = std.get(g._config, storageVolume, default={
       name: 'grafana-storage',
       emptyDir: {},
-    };
-    local storageVolumeMount = {
+    });
+    local storageVolumeMount = std.get(g._config, storageVolumeMount, default={
       name: storageVolume.name,
       mountPath: '/var/lib/grafana',
       readOnly: false,
-    };
+    });
 
     local datasourcesVolume = {
       name: 'grafana-datasources',
