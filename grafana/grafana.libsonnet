@@ -320,6 +320,7 @@ function(params) {
       securityContext: {
         capabilities: { drop: ['ALL'] },
         allowPrivilegeEscalation: false,
+        readOnlyRootFilesystem: true,
       },
     };
 
