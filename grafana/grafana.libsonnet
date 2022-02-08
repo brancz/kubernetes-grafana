@@ -232,12 +232,23 @@ function(params) {
       mountPath: '/etc/grafana/provisioning/dashboards',
       readOnly: false,
     };
+    // A volume on /tmp is needed to let us use 'readOnlyRootFilesystem: true'
+    local pluginTmpVolume = {
+      name: 'tmp-plugins',
+      emptyDir: {},
+    };
+    local pluginTmpVolumeMount = {
+      mountPath: '/tmp',
+      name: 'tmp-plugins',
+      readOnly: false,
+    };
 
     local volumeMounts =
       [
         storageVolumeMount,
         datasourcesVolumeMount,
         dashboardsVolumeMount,
+        pluginTmpVolumeMount,
       ] +
       [
         {
@@ -266,6 +277,7 @@ function(params) {
         storageVolume,
         datasourcesVolume,
         dashboardsVolume,
+        pluginTmpVolume,
       ] +
       [
         {
