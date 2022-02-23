@@ -235,7 +235,9 @@ function(params) {
     // A volume on /tmp is needed to let us use 'readOnlyRootFilesystem: true'
     local pluginTmpVolume = {
       name: 'tmp-plugins',
-      emptyDir: {},
+      emptyDir: {
+        medium: 'Memory',
+      },
     };
     local pluginTmpVolumeMount = {
       mountPath: '/tmp',
