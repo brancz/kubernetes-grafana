@@ -319,6 +319,7 @@ function(params) {
       resources: g._config.resources,
       securityContext: {
         capabilities: { drop: ['ALL'] },
+        allowPrivilegeEscalation: false,
       },
     };
 
