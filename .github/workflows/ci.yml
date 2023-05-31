@@ -4,7 +4,7 @@ on:
   - push
   - pull_request
 env:
-  golang-version: '1.15'
+  golang-version: '1.20'
 jobs:
   generate:
     runs-on: ${{ matrix.os }}
@@ -15,19 +15,19 @@ jobs:
           - ubuntu-latest
     name: Generate
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-go@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v4
       with:
         go-version: ${{ env.golang-version }}
-    - run: go get github.com/google/go-jsonnet/cmd/jsonnetfmt
+    - run: go install github.com/google/go-jsonnet/cmd/jsonnetfmt@latest
     - run: make generate
   build:
     runs-on: ubuntu-latest
     name: Build
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-go@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v4
       with:
         go-version: ${{ env.golang-version }}
-    - run: go get github.com/google/go-jsonnet/cmd/jsonnet
+    - run: go install github.com/google/go-jsonnet/cmd/jsonnet@latest
     - run: make build
