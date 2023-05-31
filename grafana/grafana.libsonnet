@@ -40,6 +40,7 @@ local defaults = {
       date_formats: { default_timezone: 'UTC' },
     },
   },
+  notifiers: [],
   ldap: null,
   plugins: [],
   env: [],
@@ -192,6 +193,22 @@ function(params) {
     },
   },
 
+  notifiers: {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: g._metadata {
+      name: 'grafana-notifiers',
+    },
+    type: 'Opaque',
+    stringData: {
+      'notifiers.yaml': std.manifestYamlDoc(
+        {
+          apiVersion: 1,
+          notifiers: g._config.notifiers,
+        }),
+    },
+  },
+
   deployment:
     local configVolume = {
       name: 'grafana-config',
@@ -245,6 +262,16 @@ function(params) {
       readOnly: false,
     };
 
+    local notifiersVolume = {
+      name: 'grafana-notifiers',
+      secret: { secretName: g.notifiers.metadata.name },
+    };
+    local notifiersVolumeMount = {
+      name: notifiersVolume.name,
+      mountPath: '/etc/grafana/provisioning/notifiers',
+      readOnly: false,
+    };
+
     local volumeMounts =
       [
         storageVolumeMount,
@@ -272,6 +299,8 @@ function(params) {
         for name in std.objectFields(g._config.folderDashboards[folder])
       ] + (
         if std.length(g._config.config) > 0 then [configVolumeMount] else []
+      ) + (
+        if std.length(g._config.notifiers) > 0 then [notifiersVolumeMount] else []
       );
 
     local volumes =
@@ -305,8 +334,11 @@ function(params) {
           configMap: { name: dashboardName },
         }
         for name in std.objectFields(g._config.rawDashboards)
-      ] +
-      if std.length(g._config.config) > 0 then [configVolume] else [];
+      ] + (
+        if std.length(g._config.config) > 0 then [configVolume] else []
+      ) + (
+        if std.length(g._config.notifiers) > 0 then [notifiersVolume] else []
+      );
 
     local plugins = (
       if std.length(g._config.plugins) == 0 then
@@ -356,6 +388,7 @@ function(params) {
               'checksum/grafana-datasources': std.md5(std.toString(g.dashboardDatasources)),
               [if g._config.dashboardsChecksum then 'checksum/grafana-dashboards']: std.md5(std.toString(g.dashboardDefinitions)),
               'checksum/grafana-dashboardproviders': std.md5(std.toString(g.dashboardSources)),
+              [if std.length(g._config.notifiers) > 0 then 'checksum/grafana-notifiers']: std.md5(std.toString(g.notifiers)),
             },
           },
           spec: {
