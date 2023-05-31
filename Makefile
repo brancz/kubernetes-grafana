@@ -15,7 +15,7 @@ docs: embedmd
 
 embedmd:
 	@echo -e "\033[1m>> Ensuring embedmd is installed\033[0m"
-	go get github.com/campoy/embedmd
+	go install github.com/campoy/embedmd@latest
 
 build: jb
 	cd grafana && jb install
@@ -26,4 +26,4 @@ compile:
 
 jb:
 	@echo -e "\033[1m>> Ensuring jb (jsonnet-bundler) is installed\033[0m"
-	go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
+	go install github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest
