@@ -335,6 +335,7 @@ function(params) {
         capabilities: { drop: ['ALL'] },
         allowPrivilegeEscalation: false,
         readOnlyRootFilesystem: true,
+        seccompProfile: { type: 'RuntimeDefault' },
       },
     };
 
