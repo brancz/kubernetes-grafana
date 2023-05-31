@@ -203,11 +203,15 @@ function(params) {
       readOnly: false,
     };
 
-    local storageVolume = {
+    local storageVolume = if std.objectHasAll(g._config, 'storageVolume')
+    then g._config.storageVolume
+    else {
       name: 'grafana-storage',
       emptyDir: {},
     };
-    local storageVolumeMount = {
+    local storageVolumeMount = if std.objectHasAll(g._config, 'storageVolumeMount')
+    then g._config.storageVolumeMount
+    else {
       name: storageVolume.name,
       mountPath: '/var/lib/grafana',
       readOnly: false,
