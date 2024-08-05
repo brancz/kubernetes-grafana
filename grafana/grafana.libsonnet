@@ -20,6 +20,7 @@ local defaults = {
     limits: { cpu: '200m', memory: '200Mi' },
   },
 
+  alertings: {},
   dashboards: {},
   rawDashboards: {},
   folderDashboards: {},
@@ -84,6 +85,19 @@ function(params) {
     stringData: {
       'grafana.ini': std.manifestIni(g._config.config),
     } + if g._config.ldap != null then { 'ldap.toml': g._config.ldap } else {},
+  },
+
+  alertingsDefinition: {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    type: 'Opaque',
+    metadata: g._metadata {
+      name: 'grafana-alertings',
+    },
+    stringData: {
+      [name]: std.manifestJsonEx(g._config.alertings[name], '    ')
+      for name in std.objectFields(g._config.alertings)
+    },
   },
 
   dashboardDefinitions: {
@@ -213,6 +227,16 @@ function(params) {
       readOnly: false,
     };
 
+    local alertingsVolume = {
+      name: 'grafana-alertings',
+      secret: { secretName: g.alertingsDefinition.metadata.name },
+    };
+    local alertingsVolumeMount = {
+      name: alertingsVolume.name,
+      mountPath: '/etc/grafana/provisioning/alerting',
+      readOnly: false,
+    };
+
     local datasourcesVolume = {
       name: 'grafana-datasources',
       secret: { secretName: g.dashboardDatasources.metadata.name },
@@ -251,6 +275,7 @@ function(params) {
         datasourcesVolumeMount,
         dashboardsVolumeMount,
         pluginTmpVolumeMount,
+        alertingsVolumeMount,
       ] +
       [
         {
@@ -280,6 +305,7 @@ function(params) {
         datasourcesVolume,
         dashboardsVolume,
         pluginTmpVolume,
+        alertingsVolume,
       ] +
       [
         {
